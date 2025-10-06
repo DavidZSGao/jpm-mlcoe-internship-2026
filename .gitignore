@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Virtual Environments
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints
+
+# macOS
+.DS_Store
+
+# Data and artifacts (uncomment if files are large)
+# mlcoe_q1/data/raw/*
+# mlcoe_q1/data/processed/*
+# mlcoe_q1/models/artifacts/*.h5
+# mlcoe_q1/models/artifacts/*.keras
+
+# Reports artifacts (keep JSON summaries, exclude large figures if needed)
+# reports/figures/*.png
+
+# Temporary files
+*.log
+*.tmp

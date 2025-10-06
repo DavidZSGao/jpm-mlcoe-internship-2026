@@ -1,0 +1,24 @@
+{
+  "summary": {
+    "mean_abs_error_means": 1.310805438301247e-08,
+    "max_abs_error_means": 9.781343845993717e-08,
+    "rmse_means": 2.0153408915243726e-08,
+    "mean_abs_error_covs": 5.239549923982305e-10,
+    "max_abs_error_covs": 2.8016758607529724e-08,
+    "joseph_vs_naive_diff": 8.940696716308594e-08,
+    "transition_cond": 2.5,
+    "observation_cond": 2.0
+  },
+  "metrics": {
+    "per_dim_mae": [
+      2.009094313554227e-08,
+      1.5793976595457337e-08,
+      3.439243418037798e-09
+    ],
+    "per_dim_rmse": [
+      2.74665337699434e-08,
+      2.0939130422853205e-08,
+      5.061819091431281e-09
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+# Question 2 Benchmark Summary
+
+## Overview
+This report captures the consolidated benchmarking results for the Question&nbsp;2 filtering and particle-flow methods. Measurements were generated with `mlcoe_q2/experiments/benchmark.py` (TensorFlow backend, seed `0`, 15-step nonlinear SSM scenario).
+
+## Experimental Setup
+- **Model**: Nonlinear SSM defined in `_build_nonlinear_model()` within `mlcoe_q2/experiments/benchmark.py`.
+- **Sequence length**: 15 observation steps simulated once per run.
+- **Particles**: 256 for `particle_filter()` and `differentiable_particle_filter()`; deterministic flows reuse the same count.
+- **Hardware**: CPU execution (TensorFlow retracing warnings observed; see notes).
+
+## Filtering Methods
+| Method | Runtime (s) | Peak Memory (KB) | Log-Likelihood | Mean ESS |
+| --- | ---: | ---: | ---: | ---: |
+| PF | 50.83 | 34,117.58 | -17.74 | 174.61 |
+| Differentiable PF | 53.13 | 34,162.87 | -91.28 | 209.31 |
+| EKF | 9.86 | 2,535.95 | -9.44 | — |
+| UKF | 1.75 | 2,269.09 | -9.28 | — |
+
+**Highlights**
+- **Likelihood**: EKF/UKF deliver higher (less negative) log-likelihoods than particle approaches in this configuration.
+- **ESS**: Differentiable PF increases mean ESS by ~20% versus SIR PF, despite worse likelihood—indicates smoother weight distribution but possible model mismatch.
+- **Runtime/Memory**: PF variants dominate compute time and memory owing to TensorFlow OT resampling; deterministic filters remain lightweight.
+
+## Deterministic Particle Flows
+| Flow | Total Runtime (s) | Peak Memory (KB) | Mean Particle Movement | Mean Residual (Before) | Mean Residual (After) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| EDH | 5,529.07 | 18,490.09 | 0.48 | 0.34 | 0.12 |
+| LEDH | 4,192.26 | 17,444.06 | 0.22 | 0.37 | 0.26 |
+| Kernel | 84.36 | 3,713.99 | 0.79 | 0.35 | 0.09 |
+
+**Highlights**
+- **Kernel flow** achieves the largest reduction in residual norm with moderate runtime and memory.
+- **EDH/LEDH** exhibit great runtime variance—profiling indicates costly Jacobian computation per step (thousands of seconds on CPU).
+- Movement metrics align with expected aggressiveness (Kernel > EDH > LEDH).
+
+## Notes & Caveats
+- **Retracing warnings**: TensorFlow reported repeated tracing in `benchmark_flow()` when flows are invoked inside the time loop. Consider caching compiled `tf.function`s or enabling `reduce_retracing=True` to improve performance and suppress warnings.
+- **Single-seed evaluation**: Results reflect one random seed; extend to multiple seeds for tighter confidence intervals.
+- **CPU-only run**: GPU acceleration could substantially reduce runtimes, particularly for EDH/LEDH and OT resampling.
+
+## Recommended Follow-Up
+- Tighten differentiable PF hyperparameters (e.g., `mix_with_uniform`, Sinkhorn epsilon) to improve log-likelihood without sacrificing ESS.
+- Profile flow routines to identify hotspots; experiment with analytical Jacobians or batched linear solves to reduce EDH/LEDH runtime.
+- Generate plots (ESS trajectories, residuals, transport plan entropy) for inclusion in the Question&nbsp;2 deliverable.
+- Evaluate bonus-scope extensions after addressing retracing and multi-seed benchmarking.
+
+
+## New Additions (Automation Ready)
+- `benchmark.py` now records flow log-Jacobian statistics and exposes PF-PF runs (`PF_PF_EDH`, `PF_PF_LEDH`, `PF_PF_Kernel*`). Re-run `python -m mlcoe_q2.experiments.benchmark` to populate the new `pfpf_results` block in the JSON output.
+- Flow diagnostics include per-step log-det means; use them to assess numerical stability before reproducing Li (2017) figures.
+- Differentiable PF benchmarking benefits from the epsilon schedule and gradient-checked implementation—tune `--mix-with-uniform`, `--ot-epsilon`, and `--sinkhorn-tolerance` directly in the CLI.

@@ -1,0 +1,13 @@
+{
+  "period": "2024-12-31 00:00:00",
+  "total_revenue": 187442000000.0,
+  "total_expenses": 174658000000.0,
+  "net_income": 6008000000.0,
+  "cost_to_income_ratio": 0.931797569381462,
+  "quick_ratio": 0.9762738274554615,
+  "debt_to_equity": 2.0568873668188736,
+  "debt_to_assets": 0.4637243933214422,
+  "debt_to_capital": 0.6728698574718367,
+  "debt_to_ebitda": 5.963592902454721,
+  "interest_coverage": 11.069739952718676
+}
