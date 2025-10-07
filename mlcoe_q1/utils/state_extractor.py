@@ -11,11 +11,20 @@ from mlcoe_q1.models.balance_sheet_constraints import BalanceSheetState
 from .statement_loader import load_processed_statement, wide_pivot
 
 
+def _normalize_label(label: str) -> str:
+    return ''.join(ch for ch in label.lower() if ch.isalnum())
+
+
 def _series(df: pd.DataFrame, *candidates: str) -> pd.Series:
+    if df.empty:
+        return pd.Series(dtype=float)
+
+    normalized = {_normalize_label(column): column for column in df.columns}
     for name in candidates:
-        if name in df.columns:
-            return df[name]
-    return pd.Series(0.0, index=df.index)
+        key = _normalize_label(name)
+        if key in normalized:
+            return df[normalized[key]]
+    return pd.Series(0.0, index=df.index, dtype=float)
 
 
 def extract_state(df: pd.DataFrame, period: pd.Timestamp) -> BalanceSheetState:

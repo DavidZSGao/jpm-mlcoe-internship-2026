@@ -10,6 +10,7 @@ from typing import Dict, List
 @dataclass
 class DriverConfig:
     input_dim: int
+    output_dim: int
     hidden_units: List[int]
     dropout: float = 0.0
 
@@ -21,7 +22,7 @@ def build_mlp_forecaster(config: DriverConfig) -> tf.keras.Model:
         x = tf.keras.layers.Dense(units, activation='relu')(x)
         if config.dropout:
             x = tf.keras.layers.Dropout(config.dropout)(x)
-    outputs = tf.keras.layers.Dense(8, activation=None)(x)
+    outputs = tf.keras.layers.Dense(config.output_dim, activation=None)(x)
     model = tf.keras.Model(inputs, outputs)
     return model
 

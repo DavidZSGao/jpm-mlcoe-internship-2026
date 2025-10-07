@@ -4,16 +4,25 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Dict, Sequence
+from typing import Dict, Iterable, Sequence
 
 import pandas as pd
+import numpy as np
 
 from .statement_loader import load_processed_statement, wide_pivot
+
+
+def _normalize_label(label: str) -> str:
+    """Lowercase a line item and strip non-alphanumeric characters for fuzzy matching."""
+
+    return "".join(ch for ch in label.lower() if ch.isalnum())
 
 
 @dataclass
 class DriverFeatures:
     sales: float
+    log_sales: float
+    sales_per_asset: float
     sales_growth: float
     ebit_margin: float
     depreciation_ratio: float
@@ -50,15 +59,26 @@ _CANDIDATES: Dict[str, Sequence[str]] = {
         "stockholdersEquity",
         "commonStockEquity",
     ),
+    "assets": (
+        "totalAssets",
+        "totalAssetsReported",
+        "assets",
+    ),
     "net_income": ("netIncome", "netIncomeCommonStockholders"),
 }
 
 
 def _pick(series_frame: pd.DataFrame, candidates: Sequence[str]) -> pd.Series:
+    if series_frame.empty:
+        return pd.Series(dtype=float)
+
+    normalized = {_normalize_label(column): column for column in series_frame.columns}
     for name in candidates:
-        if name in series_frame.columns:
-            return series_frame[name]
-    return pd.Series(0.0, index=series_frame.index)
+        key = _normalize_label(name)
+        if key in normalized:
+            return series_frame[normalized[key]]
+
+    return pd.Series(0.0, index=series_frame.index, dtype=float)
 
 
 def compute_driver_frame(df: pd.DataFrame) -> pd.DataFrame:
@@ -66,9 +86,13 @@ def compute_driver_frame(df: pd.DataFrame) -> pd.DataFrame:
     balance = wide_pivot(df, 'balance_sheet')
     cashflow = wide_pivot(df, 'cashflow_statement')
 
-    sales = _pick(income, _CANDIDATES['sales'])
-    sales = sales.replace(0, pd.NA)
-    sales_growth = sales.pct_change()
+    sales = pd.to_numeric(_pick(income, _CANDIDATES['sales']), errors='coerce').replace(0, pd.NA)
+    assets = pd.to_numeric(_pick(balance, _CANDIDATES['assets']), errors='coerce').replace(0, pd.NA)
+
+    positive_sales = sales.where(sales > 0)
+    log_sales = np.log(pd.to_numeric(positive_sales, errors='coerce'))
+
+    sales_growth = sales.pct_change(fill_method=None)
 
     ebit = _pick(income, _CANDIDATES['ebit'])
     ebit_margin = ebit.divide(sales)
@@ -93,9 +117,12 @@ def compute_driver_frame(df: pd.DataFrame) -> pd.DataFrame:
     debt = _pick(balance, _CANDIDATES['debt'])
     equity = _pick(balance, _CANDIDATES['equity'])
     leverage_ratio = debt.divide(debt + equity)
+    sales_per_asset = sales.divide(assets)
 
     out = pd.DataFrame({
         'sales': sales,
+        'log_sales': log_sales,
+        'sales_per_asset': sales_per_asset,
         'sales_growth': sales_growth,
         'ebit_margin': ebit_margin,
         'depreciation_ratio': depreciation_ratio,
@@ -104,7 +131,9 @@ def compute_driver_frame(df: pd.DataFrame) -> pd.DataFrame:
         'payout_ratio': payout_ratio,
         'leverage_ratio': leverage_ratio,
     })
-    return out.dropna()
+    cleaned = out.apply(pd.to_numeric, errors='coerce')
+    cleaned = cleaned.mask(~np.isfinite(cleaned))
+    return cleaned.dropna()
 
 
 def compute_drivers_for_ticker(root: Path, ticker: str) -> pd.DataFrame:

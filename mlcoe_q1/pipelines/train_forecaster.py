@@ -13,9 +13,12 @@ import pandas as pd
 import tensorflow as tf
 
 from mlcoe_q1.models.tf_forecaster import DriverConfig, build_mlp_forecaster
+from mlcoe_q1.models.bank_template import compute_bank_template, serialize_templates
+from mlcoe_q1.utils.state_extractor import extract_states
 
 FEATURE_COLUMNS = [
-    'sales',
+    'log_sales',
+    'sales_per_asset',
     'sales_growth',
     'ebit_margin',
     'depreciation_ratio',
@@ -25,11 +28,9 @@ FEATURE_COLUMNS = [
     'leverage_ratio',
 ]
 AUX_FEATURES = ['is_bank']
-BANK_TICKERS = {'JPM'}
+BANK_TICKERS = {'JPM', 'BAC', 'C'}
 
-TRANSFORM_CONFIG = {
-    'sales': 'log1p'
-}
+TRANSFORM_CONFIG = {}
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -43,6 +44,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--output-dir",
         type=Path,
         default=Path(__file__).resolve().parents[1] / "models/artifacts/driver_forecaster",
+    )
+    parser.add_argument(
+        "--processed-root",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "data/processed",
+        help="Directory containing processed statements for bank template extraction",
     )
     parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--batch-size", type=int, default=16)
@@ -59,8 +66,6 @@ def build_dataset(df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     X_list: list[np.ndarray] = []
     y_list: list[np.ndarray] = []
     for ticker, group in df.groupby('ticker'):
-        if ticker.upper() in BANK_TICKERS:
-            continue
         group = group.sort_values('period')
         values = group[FEATURE_COLUMNS].astype(float).to_numpy()
         sector_vec = _sector_vector(ticker)
@@ -76,9 +81,6 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     df = pd.read_parquet(args.drivers)
     df = df.dropna(subset=FEATURE_COLUMNS)
-    for col, method in TRANSFORM_CONFIG.items():
-        if col in df.columns and method == 'log1p':
-            df[col] = np.log1p(df[col]).astype(float)
     X, y = build_dataset(df)
 
     if len(X) == 0:
@@ -101,7 +103,12 @@ def main(argv: Sequence[str] | None = None) -> None:
     y_test_scaled = (y_test - y_mean) / y_std
 
     model = build_mlp_forecaster(
-        DriverConfig(input_dim=X.shape[1], hidden_units=[64, 64], dropout=0.1)
+        DriverConfig(
+            input_dim=X.shape[1],
+            output_dim=len(FEATURE_COLUMNS),
+            hidden_units=[64, 64],
+            dropout=0.1,
+        )
     )
     model.compile(
         optimizer=tf.keras.optimizers.Adam(args.learning_rate),
@@ -136,6 +143,22 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     with open(args.output_dir / 'training_history.json', 'w') as fh:
         json.dump(history.history, fh)
+
+    bank_templates = {}
+    for ticker in sorted(set(df['ticker']).intersection(BANK_TICKERS)):
+        statement_path = args.processed_root / f"{ticker}.parquet"
+        if not statement_path.exists():
+            logging.warning("Skipping bank template for %s (missing %s)", ticker, statement_path)
+            continue
+        states = extract_states(statement_path)
+        try:
+            bank_templates[ticker] = compute_bank_template(ticker, states)
+        except ValueError as exc:
+            logging.warning("Unable to build bank template for %s: %s", ticker, exc)
+
+    if bank_templates:
+        with open(args.output_dir / 'bank_templates.json', 'w') as fh:
+            json.dump(serialize_templates(bank_templates.values()), fh, indent=2)
 
     logging.info('Training complete. Model saved to %s', args.output_dir)
 

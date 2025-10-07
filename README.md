@@ -17,7 +17,7 @@ A TensorFlow-based system for forecasting corporate balance sheets using:
 - Accounting identity constraints
 - MLP-based time-series prediction
 
-**Status:** Part 1 implementation complete with data pipelines, model training, and evaluation metrics.
+**Status:** Core data/model pipelines in place; documentation, bank calibration, and LLM/PDF extensions remain in progress (see `reports/q1/q1_workplan.md`).
 
 ### Question 2: State-Space Models & Particle Filters
 Implementation and benchmarking of sequential Monte Carlo methods including:
@@ -72,8 +72,18 @@ PYTHONPATH=. pytest tests/q2/
 python -m mlcoe_q1.pipelines.download_statements AAPL MSFT
 python -m mlcoe_q1.pipelines.prepare_processed_data
 
-# Train forecasting model
-python -m mlcoe_q1.pipelines.train_forecaster
+# Train forecasting model (also exports bank templates)
+python -m mlcoe_q1.pipelines.train_forecaster --processed-root mlcoe_q1/data/processed
+
+# Evaluate forecasts (bank templates vs MLP/persistence via --bank-mode)
+python -m mlcoe_q1.pipelines.evaluate_forecaster --processed-root mlcoe_q1/data/processed \
+    --drivers mlcoe_q1/data/processed/driver_features.parquet \
+    --model-dir mlcoe_q1/models/artifacts/driver_forecaster \
+    --output reports/q1/artifacts/forecaster_eval.parquet
+
+# Summarize processed statements with pandas
+python -m mlcoe_q1.pipelines.describe_processed --tickers AAPL MSFT \
+    --output reports/q1/artifacts/aapl_msft_summary.json
 ```
 
 ### Question 2

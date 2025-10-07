@@ -1,0 +1,62 @@
+{
+  "BAC": {
+    "ticker": "BAC",
+    "asset_growth": 0.010212709982735994,
+    "liability_ratio": 0.8147677688247956,
+    "asset_weights": {
+      "cash": 0.08643380831088752,
+      "receivables": 0.02138239491066072,
+      "inventory": 0.0,
+      "other_current_assets": 0.0,
+      "net_pp_and_e": 0.0,
+      "other_non_current_assets": 0.8921837967784518
+    },
+    "liability_weights": {
+      "accounts_payable": 0.0,
+      "short_term_debt": 0.010907103341723486,
+      "accrued_expenses": 0.0,
+      "long_term_debt": 0.09902083308777068,
+      "other_liabilities": 0.8900720635705058
+    }
+  },
+  "C": {
+    "ticker": "C",
+    "asset_growth": -0.017003455849804214,
+    "liability_ratio": 0.7997480149743426,
+    "asset_weights": {
+      "cash": 0.10523502227547446,
+      "receivables": 0.01971114228629856,
+      "inventory": 0.0,
+      "other_current_assets": 0.0,
+      "net_pp_and_e": 0.0,
+      "other_non_current_assets": 0.875053835438227
+    },
+    "liability_weights": {
+      "accounts_payable": 0.030135066086620532,
+      "short_term_debt": 0.018566747746240817,
+      "accrued_expenses": 0.0,
+      "long_term_debt": 0.12709834069001144,
+      "other_liabilities": 0.8241998454771272
+    }
+  },
+  "JPM": {
+    "ticker": "JPM",
+    "asset_growth": 0.024895750769705002,
+    "liability_ratio": 0.7998628577625961,
+    "asset_weights": {
+      "cash": 0.12275191089647412,
+      "receivables": 0.02472105179550198,
+      "inventory": 0.0,
+      "other_current_assets": 0.0,
+      "net_pp_and_e": 0.006651846731203448,
+      "other_non_current_assets": 0.8458751905768205
+    },
+    "liability_weights": {
+      "accounts_payable": 0.048125052956248096,
+      "short_term_debt": 0.014704357646141003,
+      "accrued_expenses": 0.0,
+      "long_term_debt": 0.09799667848806302,
+      "other_liabilities": 0.8391739109095477
+    }
+  }
+}

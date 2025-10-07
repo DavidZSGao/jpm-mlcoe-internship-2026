@@ -16,6 +16,7 @@ import pathlib
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional
 
+import pandas as pd
 import requests
 
 try:
@@ -216,6 +217,45 @@ def _frame_is_empty(df: Any) -> bool:
         return df.empty  # type: ignore[no-any-return]
     except AttributeError:
         return False
+
+
+def _dataframe_to_dict(df: Any) -> Dict[str, Dict[str, float]]:
+    if df is None or not hasattr(df, "empty"):
+        return {}
+
+    frame = df.copy()
+    if getattr(frame, "empty", True):
+        return {}
+
+    if isinstance(frame.columns, pd.MultiIndex):
+        frame.columns = [
+            " ".join(str(part) for part in col if part)
+            for col in frame.columns
+        ]
+
+    periods: List[str] = []
+    for col in frame.columns:
+        if isinstance(col, pd.Timestamp):
+            periods.append(col.date().isoformat())
+        else:
+            periods.append(str(col))
+
+    mapping: Dict[str, Dict[str, float]] = {}
+    for row_label, row in frame.iterrows():
+        key = _canonicalise_key(str(row_label))
+        series: Dict[str, float] = {}
+        for idx, period in enumerate(periods):
+            value = row.iloc[idx]
+            if pd.isna(value):
+                continue
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError):
+                continue
+            series[period] = numeric
+        if series:
+            mapping[key] = series
+    return mapping
 
 
 def _timeseries_statement(*, session: requests.Session, ticker: str, crumb: str, statement_key: str) -> Dict[str, Dict[str, float]]:

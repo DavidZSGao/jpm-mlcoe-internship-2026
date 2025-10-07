@@ -49,7 +49,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv)
     structured = load_json(args.structured)
-    pdf_ratios = load_json(args.pdf)
+    pdf_payload = load_json(args.pdf)
+    pdf_ratios = pdf_payload.get('ratios', pdf_payload)
 
     records = []
     for key in STRUCTURED_KEYS:

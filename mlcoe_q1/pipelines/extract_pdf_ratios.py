@@ -1,12 +1,31 @@
-"""Extract financial ratios from PDFs using configurable label patterns."""
+"""Extract financial ratios from PDFs using configurable label patterns.
+
+This module was originally sketched as a quick script for the GM annual
+report.  As we scale Question 1 coverage to other issuers we need better
+observability and configuration hygiene so extractions are reproducible.
+
+Enhancements in this revision:
+
+* both income statement and balance sheet extractors return metadata
+  describing which page/strategy succeeded (useful when debugging
+  layout-specific failures);
+* the CLI can load bespoke configs via ``--config`` while still shipping a
+  reasonable built-in default set for GM, LVMH, and Tencent;
+* the JSON artifact now records provenance (timestamp, pdfplumber version,
+  source PDF, company key) alongside ratios.
+
+This keeps the extraction deterministic while giving downstream analyses a
+clear audit trail – an explicit action item from the Question 1 roadmap.
+"""
 
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 import re
 from pathlib import Path
-from typing import Dict, Optional, Sequence
+from typing import Dict, Optional, Sequence, Tuple
 
 import pdfplumber
 
@@ -67,7 +86,63 @@ COMPANY_CONFIG: Dict[str, Dict] = {
             {'vertical_strategy': 'text', 'horizontal_strategy': 'text'}
         ],
     },
+    'tencent': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Total revenue', 'Revenue'],
+            'operating_income': ['Operating profit', 'Operating profit/(loss)'],
+            'net_income': ['Profit for the year', 'Profit attributable to equity holders'],
+            'interest_labels': [
+                'Finance costs',
+                'Interest expenses',
+                'Interest expense',
+                'Finance cost',
+            ],
+            'expense_mode': 'revenue_minus_profit',
+            'profit_label': ['Operating profit', 'Operating profit/(loss)'],
+            'table_markers': [
+                'Consolidated income statement',
+                'Consolidated statement of profit or loss',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets', 'Current assets'],
+            'inventory': ['Inventories', 'Inventory'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities', 'Current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total equity',
+                'Equity attributable to equity holders of the company',
+                'Total equity attributable to equity holders of the company',
+            ],
+            'short_term_debt': [
+                'Bank loans and overdrafts',
+                'Current borrowings',
+                'Borrowings – current',
+                'Borrowings (current)',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': [
+                'Non-current borrowings',
+                'Borrowings – non-current',
+                'Borrowings (non-current)',
+                'Notes payable',
+            ],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheet',
+                'Consolidated statement of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
 }
+
+Metadata = Dict[str, object]
 
 
 def parse_value(token: Optional[str], scale: float) -> Optional[float]:
@@ -135,7 +210,7 @@ def set_if_missing(store: Dict[str, float], key: str, value: Optional[float]) ->
     store.setdefault(key, value)
 
 
-def extract_income_statement(pdf: pdfplumber.PDF, cfg: Dict) -> Dict[str, float]:
+def extract_income_statement(pdf: pdfplumber.PDF, cfg: Dict) -> Tuple[Dict[str, float], Metadata]:
     income_cfg = cfg['income']
     scale = cfg['scale']
     aggregated: Dict[str, float] = {}
@@ -203,11 +278,15 @@ def extract_income_statement(pdf: pdfplumber.PDF, cfg: Dict) -> Dict[str, float]
                 aggregated['total_expenses'] = abs(aggregated['revenue'] - profit_metric)
             if required <= aggregated.keys():
                 aggregated['interest_expense'] = interest_sum
-                return aggregated
+                return aggregated, {
+                    'page_index': idx,
+                    'strategy': spec,
+                    'table_rows': len(table or []),
+                }
     raise RuntimeError('Income statement table not found')
 
 
-def extract_balance_sheet(pdf: pdfplumber.PDF, cfg: Dict) -> Dict[str, float]:
+def extract_balance_sheet(pdf: pdfplumber.PDF, cfg: Dict) -> Tuple[Dict[str, float], Metadata]:
     balance_cfg = cfg['balance']
     scale = cfg['scale']
     aggregated: Dict[str, float] = {}
@@ -304,20 +383,25 @@ def extract_balance_sheet(pdf: pdfplumber.PDF, cfg: Dict) -> Dict[str, float]:
                 else:
                     current_section = None
             if {'total_assets', 'equity', 'current_liabilities'} <= aggregated.keys():
-                return aggregated
+                return aggregated, {
+                    'page_index': idx,
+                    'strategy': spec,
+                    'table_rows': len(table or []),
+                }
         if 'total_assets' in aggregated:
             marker_active = False
     raise RuntimeError('Balance sheet table not found')
 
 
-def compute_ratios(pdf_path: Path, company: str) -> Dict[str, float]:
+def compute_ratios(pdf_path: Path, company: str) -> Dict[str, object]:
     company = company.lower()
     if company not in COMPANY_CONFIG:
         raise ValueError(f'Unsupported company config: {company}')
     cfg = COMPANY_CONFIG[company]
     with pdfplumber.open(pdf_path) as pdf:
-        income = extract_income_statement(pdf, cfg)
-        balance = extract_balance_sheet(pdf, cfg)
+        page_count = len(pdf.pages)
+        income, income_meta = extract_income_statement(pdf, cfg)
+        balance, balance_meta = extract_balance_sheet(pdf, cfg)
 
     short_debt = balance.get('short_term_debt', 0.0)
     long_debt = balance.get('long_term_debt', 0.0)
@@ -335,23 +419,46 @@ def compute_ratios(pdf_path: Path, company: str) -> Dict[str, float]:
         'interest_coverage': income['operating_income'] / (income['interest_expense'] if income['interest_expense'] else 1.0),
         'debt_to_ebit': total_debt / income['operating_income'],
     }
-    return ratios
+    return {
+        'ratios': ratios,
+        'metadata': {
+            'company_key': company,
+            'scale': cfg['scale'],
+            'page_count': page_count,
+            'income_table': income_meta,
+            'balance_sheet_table': balance_meta,
+        },
+    }
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('pdf', type=Path, help='Path to the PDF')
     parser.add_argument('--company', choices=COMPANY_CONFIG.keys(), required=True)
+    parser.add_argument('--config', type=Path, help='Optional path to a JSON file overriding company defaults')
     parser.add_argument('--output', type=Path, default=Path('reports/q1/artifacts/pdf_ratios.json'))
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv)
-    ratios = compute_ratios(args.pdf, args.company)
+    cfg_override: Optional[Dict] = None
+    if args.config:
+        with open(args.config) as fh:
+            cfg_override = json.load(fh)
+        COMPANY_CONFIG[args.company] = cfg_override
+    result = compute_ratios(args.pdf, args.company)
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    result['metadata'].update(
+        {
+            'source_pdf': str(args.pdf),
+            'extraction_timestamp_utc': datetime.now(timezone.utc).isoformat(),
+            'pdfplumber_version': getattr(pdfplumber, '__version__', 'unknown'),
+            'table_strategies': cfg_override.get('table_strategies') if cfg_override else COMPANY_CONFIG[args.company].get('table_strategies'),
+        }
+    )
     with open(args.output, 'w') as fh:
-        json.dump(ratios, fh, indent=2)
+        json.dump(result, fh, indent=2)
 
 
 if __name__ == '__main__':

@@ -162,18 +162,27 @@ def _kernel_scores(
             )
         obs_jacobian = tape.jacobian(obs_pred, particle)
 
+        # Compute weighted residual in observation space
         residual = observation - obs_pred
-        score = tf.linalg.cholesky_solve(
+        weighted_residual = tf.linalg.cholesky_solve(
             obs_noise_chol,
             residual[:, tf.newaxis],
         )
-        score = tf.reshape(score, (-1,))
+        weighted_residual = tf.reshape(weighted_residual, (-1,))
 
+        # Map to state space: score = J^T * Σ_obs^{-1} * residual
+        score = tf.matmul(
+            tf.transpose(obs_jacobian),
+            weighted_residual[:, tf.newaxis],
+        )
+        score = tf.reshape(score, (state_dim,))
+
+        # Score Jacobian: -J^T * Σ_obs^{-1} * J
         score_jacobian = -tf.matmul(
             tf.transpose(obs_jacobian),
             tf.linalg.cholesky_solve(
                 obs_noise_chol,
-                tf.eye(model.observation_dim, dtype=tf.float32),
+                obs_jacobian,
             ),
         )
 
