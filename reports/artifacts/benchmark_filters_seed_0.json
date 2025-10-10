@@ -1,0 +1,33 @@
+{
+  "seed": 0,
+  "filter_results": {
+    "PF": {
+      "runtime_s": 52.38018589600688,
+      "peak_memory_kb": 34137.3759765625,
+      "log_likelihood": -17.7427978515625,
+      "ess_mean": 174.61224365234375,
+      "aux_stats": null
+    },
+    "DifferentiablePF": {
+      "runtime_s": 50.4308540620259,
+      "peak_memory_kb": 34314.5439453125,
+      "log_likelihood": -91.10462188720703,
+      "ess_mean": 209.02783203125,
+      "aux_stats": null
+    },
+    "EKF": {
+      "runtime_s": 9.457072686986066,
+      "peak_memory_kb": 2591.8310546875,
+      "log_likelihood": -9.442972183227539,
+      "ess_mean": null,
+      "aux_stats": null
+    },
+    "UKF": {
+      "runtime_s": 1.8109929739730433,
+      "peak_memory_kb": 2217.3017578125,
+      "log_likelihood": -9.284869194030762,
+      "ess_mean": null,
+      "aux_stats": null
+    }
+  }
+}

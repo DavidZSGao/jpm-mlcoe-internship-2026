@@ -15,8 +15,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--evaluation",
         type=Path,
-        default=Path(__file__).resolve().parents[2]
-        / "reports/q1/artifacts/forecaster_evaluation.parquet",
+        default=(
+            Path(__file__).resolve().parents[2]
+            / "reports/q1/artifacts/forecaster_evaluation.parquet"
+        ),
         help="Path to the parquet artifact produced by evaluate_forecaster",
     )
     parser.add_argument(
@@ -28,7 +30,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        help="Optional path to persist the summary (extension determines format)",
+        help=(
+            "Optional path to persist the summary "
+            "(extension determines format)"
+        ),
     )
     parser.add_argument("--log-level", default="INFO", help="Logging verbosity")
     return parser.parse_args(argv)
@@ -104,7 +109,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     else:
         try:
             rendered = summary.to_markdown(index=False)
-        except (ImportError, ModuleNotFoundError):  # pandas raises ImportError for tabulate
+        except (
+            ImportError,
+            ModuleNotFoundError,
+        ):  # pandas raises ImportError for tabulate
             rendered = summary.to_string(index=False)
         logging.info(
             "Summarised %d rows into %d group(s)\n%s",

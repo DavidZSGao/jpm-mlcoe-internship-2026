@@ -29,8 +29,8 @@ class SliceLayer(tf.keras.layers.Layer):
 
     def call(self, inputs: tf.Tensor) -> tf.Tensor:  # type: ignore[override]
         if self.size is None:
-            return inputs[:, self.start :]
-        return inputs[:, self.start : self.start + self.size]
+            return inputs[:, self.start:]
+        return inputs[:, self.start:self.start + self.size]
 
     def get_config(self) -> dict:
         config = super().get_config()
