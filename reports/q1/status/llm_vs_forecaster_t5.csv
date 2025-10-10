@@ -1,0 +1,2 @@
+ticker,records,llm_mae_mean,llm_mape_mean,llm_coverage_mean,forecaster_assets_mae_mean,forecaster_equity_mae_mean,forecaster_identity_gap_mean,forecaster_net_income_mae_mean
+AAPL,2,N/A,N/A,0.0,17736375201.899506,17520822257.92357,0.0,67975866028.59328

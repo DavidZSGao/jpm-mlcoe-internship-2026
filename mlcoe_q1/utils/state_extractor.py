@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Dict
 from pathlib import Path
 
@@ -100,4 +101,68 @@ def extract_states(path: Path) -> Dict[pd.Timestamp, BalanceSheetState]:
         out[period] = extract_state(df, period)
     return out
 
-__all__ = ["extract_state", "extract_states"]
+
+@dataclass(frozen=True)
+class IncomeStatementMetrics:
+    """Key income statement fields required for earnings evaluation."""
+
+    revenue: float
+    ebit: float
+    interest_expense: float
+    net_income: float
+
+
+def extract_income_metrics(df: pd.DataFrame, period: pd.Timestamp) -> IncomeStatementMetrics:
+    income = wide_pivot(df, 'income_statement')
+    period = pd.to_datetime(period)
+
+    revenue_series = _series(
+        income,
+        'totalRevenue',
+        'operatingRevenue',
+        'revenue',
+        'netRevenue',
+    )
+    ebit_series = _series(
+        income,
+        'ebit',
+        'operatingIncome',
+        'operatingProfit',
+    )
+    interest_series = _series(
+        income,
+        'interestExpense',
+        'netInterestIncome',
+        'interestAndDebtExpense',
+    )
+    net_income_series = _series(
+        income,
+        'netIncome',
+        'netIncomeCommonStockholders',
+        'netIncomeApplicableToCommonShares',
+        'netIncomeIncludingNoncontrollingInterests',
+    )
+
+    return IncomeStatementMetrics(
+        revenue=float(revenue_series.get(period, 0.0)),
+        ebit=float(ebit_series.get(period, 0.0)),
+        interest_expense=float(interest_series.get(period, 0.0)),
+        net_income=float(net_income_series.get(period, 0.0)),
+    )
+
+
+def extract_income_metric_map(path: Path) -> Dict[pd.Timestamp, IncomeStatementMetrics]:
+    df = load_processed_statement(path)
+    income = wide_pivot(df, 'income_statement')
+    out: Dict[pd.Timestamp, IncomeStatementMetrics] = {}
+    for period in income.index:
+        out[period] = extract_income_metrics(df, period)
+    return out
+
+__all__ = [
+    "extract_state",
+    "extract_states",
+    "IncomeStatementMetrics",
+    "extract_income_metrics",
+    "extract_income_metric_map",
+]

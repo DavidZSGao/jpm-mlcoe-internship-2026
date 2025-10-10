@@ -12,9 +12,11 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from mlcoe_q1.models.balance_sheet_constraints import project_forward, DriverVector
+from mlcoe_q1.models.balance_sheet_constraints import project_forward, DriverVector, ProjectionResult
+from mlcoe_q1.models import tf_forecaster as _tf_forecaster  # noqa: F401 ensures custom layers are registered
 from mlcoe_q1.models.bank_template import deserialize_templates, BankTemplate
-from mlcoe_q1.utils.state_extractor import extract_states
+from mlcoe_q1.models.bank_ensemble import deserialize_ensemble, BankEnsembleWeights
+from mlcoe_q1.utils.state_extractor import extract_states, extract_income_metric_map
 
 BANK_TICKERS = {'JPM', 'BAC', 'C'}
 
@@ -43,7 +45,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--bank-mode",
-        choices=["auto", "template", "mlp", "persistence"],
+        choices=["auto", "template", "mlp", "persistence", "ensemble"],
         default="auto",
         help="Forecasting strategy for bank tickers",
     )
@@ -115,6 +117,10 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     df = pd.read_parquet(args.drivers)
 
+    lag_columns = [col for col in df.columns if col.endswith(tuple(f"_lag{i}" for i in range(1, 10)))]
+    if lag_columns:
+        df[lag_columns] = df[lag_columns].fillna(0.0)
+
     model = tf.keras.models.load_model(args.model_dir / 'model.keras')
 
     stats_path = args.model_dir / 'scaling.json'
@@ -130,10 +136,16 @@ def main(argv: Sequence[str] | None = None) -> None:
     BANK_TICKERS = set(stats.get('bank_tickers', list(BANK_TICKERS)))
 
     bank_templates: dict[str, BankTemplate] = {}
+    bank_ensemble: dict[str, BankEnsembleWeights] = {}
     templates_path = args.model_dir / 'bank_templates.json'
     if templates_path.exists():
         with open(templates_path) as fh:
             bank_templates = deserialize_templates(json.load(fh))
+
+    ensemble_path = args.model_dir / 'bank_ensemble.json'
+    if ensemble_path.exists():
+        with open(ensemble_path) as fh:
+            bank_ensemble = deserialize_ensemble(json.load(fh))
 
     missing_columns = [col for col in feature_columns if col not in df.columns]
     if missing_columns:
@@ -149,26 +161,35 @@ def main(argv: Sequence[str] | None = None) -> None:
     x_std = np.asarray(stats['x_std'], dtype=np.float32)
     y_mean = np.asarray(stats['y_mean'], dtype=np.float32)
     y_std = np.asarray(stats['y_std'], dtype=np.float32)
+    aux_dim = int(stats.get('aux_dim', len(aux_features)))
 
     records: List[dict] = []
 
     for ticker, group in df.groupby('ticker'):
         group = group.sort_values('period').reset_index(drop=True)
         periods = pd.to_datetime(group['period']).to_list()
-        states = extract_states(args.processed_root / f"{ticker}.parquet")
+        processed_path = args.processed_root / f"{ticker}.parquet"
+        states = extract_states(processed_path)
+        income_metrics = extract_income_metric_map(processed_path)
         template = bank_templates.get(ticker.upper())
         if len(periods) < 2:
             continue
 
         features = group[feature_columns].astype(float).to_numpy()
         sector_vec = _sector_vector(ticker, aux_features)
-        inputs = [np.concatenate([features[i], sector_vec]) for i in range(len(features) - 1)]
+        if aux_dim and len(sector_vec) != aux_dim:
+            raise ValueError(
+                f"Auxiliary feature dimension mismatch: expected {aux_dim}, got {len(sector_vec)}"
+            )
+
+        inputs = []
+        for i in range(len(features) - 1):
+            feature_scaled = (features[i] - x_mean) / x_std
+            inputs.append(np.concatenate([feature_scaled, sector_vec]))
         if not inputs:
             continue
         inputs = np.asarray(inputs, dtype=np.float32)
-        inputs_scaled = (inputs - x_mean) / x_std
-
-        preds_scaled = model.predict(inputs_scaled, verbose=0)
+        preds_scaled = model.predict(inputs, verbose=0)
         preds = preds_scaled * y_std + y_mean
 
         for i in range(len(preds)):
@@ -176,7 +197,8 @@ def main(argv: Sequence[str] | None = None) -> None:
             target_period = periods[i + 1]
             state_prev = states.get(prev_period)
             state_true = states.get(target_period)
-            if state_prev is None or state_true is None:
+            metrics_true = income_metrics.get(target_period)
+            if state_prev is None or state_true is None or metrics_true is None:
                 continue
 
             pred_map = {
@@ -188,41 +210,65 @@ def main(argv: Sequence[str] | None = None) -> None:
             upper = ticker.upper()
             template_available = template is not None
             bank_mode = args.bank_mode
-            if upper in BANK_TICKERS and (
-                (bank_mode == 'template')
-                or (bank_mode == 'auto' and template_available)
-            ) and template_available:
-                result = template.project(state_prev)
-                pred_state = result.state
-                identity_gap = result.identity_gap
-                mode = 'bank_template'
 
-                # Template projection uses proportional scaling; leverage adjustment
-                # is skipped by default to avoid amplifying noise in the bank MLP head.
-            else:
-                if upper in BANK_TICKERS and bank_mode in {'persistence', 'auto'} and (bank_mode != 'mlp'):
+            template_result: ProjectionResult | None = None
+            if template_available:
+                template_result = template.project(state_prev)
+
+            mlp_result: ProjectionResult | None = None
+            driver_series = pred_series
+            if driver_series.isna().any():
+                logging.debug('Skipping %s %s due to missing predicted drivers', ticker, target_period)
+                continue
+            driver_data = driver_series.to_dict()
+            driver_vector = row_to_driver(pd.Series(driver_data))
+            mlp_result = project_forward(state_prev, driver_vector)
+
+            if upper in BANK_TICKERS:
+                if bank_mode in {'ensemble', 'auto'} and upper in bank_ensemble and template_result is not None and mlp_result is not None:
+                    weights = bank_ensemble[upper]
+                    result = weights.combine(template_result, mlp_result)
+                    pred_state = result.state
+                    identity_gap = result.identity_gap
+                    mode = 'bank_ensemble'
+                elif (
+                    bank_mode == 'template'
+                    or (bank_mode == 'auto' and template_result is not None)
+                ) and template_result is not None:
+                    result = template_result
+                    pred_state = result.state
+                    identity_gap = result.identity_gap
+                    mode = 'bank_template'
+                elif bank_mode in {'persistence', 'auto'} and bank_mode != 'mlp':
                     observed_map = {
                         feature_columns[j]: float(features[i + 1, j])
                         for j in range(len(feature_columns))
                     }
-                    driver_series = _features_to_driver_series(observed_map, transform_config)
-                    if driver_series.isna().any():
+                    driver_series_obs = _features_to_driver_series(observed_map, transform_config)
+                    if driver_series_obs.isna().any():
                         logging.debug('Skipping %s %s due to missing observed drivers', ticker, target_period)
                         continue
-                    driver_data = driver_series.to_dict()
+                    driver_vector_obs = row_to_driver(driver_series_obs)
+                    result = project_forward(state_prev, driver_vector_obs)
+                    pred_state = result.state
+                    identity_gap = result.identity_gap
                     mode = 'persistence'
                 else:
-                    driver_series = pred_series
-                    if driver_series.isna().any():
-                        logging.debug('Skipping %s %s due to missing predicted drivers', ticker, target_period)
-                        continue
-                    driver_data = driver_series.to_dict()
+                    result = mlp_result
+                    pred_state = result.state
+                    identity_gap = result.identity_gap
                     mode = 'mlp'
-
-                driver_vector = row_to_driver(pd.Series(driver_data))
-                result = project_forward(state_prev, driver_vector)
+            else:
+                result = mlp_result
                 pred_state = result.state
                 identity_gap = result.identity_gap
+                mode = 'mlp'
+
+            pred_net_income = float('nan')
+            if result.income_statement:
+                net_income_val = result.income_statement.get('net_income')
+                if net_income_val is not None:
+                    pred_net_income = float(net_income_val)
 
             records.append(
                 {
@@ -235,6 +281,8 @@ def main(argv: Sequence[str] | None = None) -> None:
                     'true_equity': state_true.equity,
                     'identity_gap': identity_gap,
                     'mode': mode,
+                    'pred_net_income': pred_net_income,
+                    'true_net_income': metrics_true.net_income,
                 }
             )
 
@@ -242,6 +290,11 @@ def main(argv: Sequence[str] | None = None) -> None:
     if not output_df.empty:
         output_df['assets_mae'] = (output_df['pred_total_assets'] - output_df['true_total_assets']).abs()
         output_df['equity_mae'] = (output_df['pred_equity'] - output_df['true_equity']).abs()
+        valid_income = output_df[['pred_net_income', 'true_net_income']].notna().all(axis=1)
+        output_df.loc[valid_income, 'net_income_mae'] = (
+            output_df.loc[valid_income, 'pred_net_income']
+            - output_df.loc[valid_income, 'true_net_income']
+        ).abs()
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     output_df.to_parquet(args.output, index=False)

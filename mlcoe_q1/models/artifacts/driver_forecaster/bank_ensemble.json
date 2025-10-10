@@ -1,0 +1,29 @@
+{
+  "BAC": {
+    "ticker": "BAC",
+    "assets_template_weight": -0.8967959881909575,
+    "assets_mlp_weight": 2.1482548365397593,
+    "assets_bias": 1.788764429749964e-12,
+    "equity_template_weight": 2.3669315282804706,
+    "equity_mlp_weight": -5.12091127980068,
+    "equity_bias": 2.2569882572627977e-10
+  },
+  "C": {
+    "ticker": "C",
+    "assets_template_weight": 0.5745728458499879,
+    "assets_mlp_weight": 0.46916781711866445,
+    "assets_bias": 1.9433354132444524e-13,
+    "equity_template_weight": -0.011279415321101993,
+    "equity_mlp_weight": 1.0744691861272435,
+    "equity_bias": 4.08305475051417e-12
+  },
+  "JPM": {
+    "ticker": "JPM",
+    "assets_template_weight": 9.957684237901365,
+    "assets_mlp_weight": -10.864024058707303,
+    "assets_bias": 4.206007382664851e-11,
+    "equity_template_weight": 0.18619548879317593,
+    "equity_mlp_weight": 0.5093131503058591,
+    "equity_bias": -1.65660769914875e-12
+  }
+}

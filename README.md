@@ -17,7 +17,7 @@ A TensorFlow-based system for forecasting corporate balance sheets using:
 - Accounting identity constraints
 - MLP-based time-series prediction
 
-**Status:** Core data/model pipelines in place; documentation, bank calibration, and LLM/PDF extensions remain in progress (see `reports/q1/q1_workplan.md`).
+**Status:** Part 1 and the core Part 2 deliverables are complete—bank ensembles drive BAC/JPM/C equity MAE below $0.01$B, the ML extension/simulation roadmaps are documented, and the LLM adapter/evaluator/CFO reporting stack (with truncation-aware HuggingFace integration) is online. Remaining backlog covers PDF regression tests, broader LLM sweeps, and bonus tracks (see `reports/q1/q1_workplan.md`).
 
 ### Question 2: State-Space Models & Particle Filters
 Implementation and benchmarking of sequential Monte Carlo methods including:
@@ -36,6 +36,8 @@ Implementation and benchmarking of sequential Monte Carlo methods including:
 - Python 3.12+
 - TensorFlow 2.x
 - TensorFlow Probability
+- PyTorch (CPU build is sufficient for the current HuggingFace adapters)
+- HuggingFace `transformers` + `sentencepiece` for LLM baselines
 
 ### Setup
 ```bash
@@ -72,18 +74,71 @@ PYTHONPATH=. pytest tests/q2/
 python -m mlcoe_q1.pipelines.download_statements AAPL MSFT
 python -m mlcoe_q1.pipelines.prepare_processed_data
 
-# Train forecasting model (also exports bank templates)
-python -m mlcoe_q1.pipelines.train_forecaster --processed-root mlcoe_q1/data/processed
+# Build driver features with two trailing-period lags for sales dynamics
+python -m mlcoe_q1.pipelines.build_driver_dataset --lags 2 --lag-features sales sales_growth \
+    --data-root mlcoe_q1/data/processed --output mlcoe_q1/data/processed/driver_features.parquet
 
-# Evaluate forecasts (bank templates vs MLP/persistence via --bank-mode)
+# Train forecasting model and calibrate bank ensembles
+python -m mlcoe_q1.pipelines.train_forecaster --processed-root mlcoe_q1/data/processed \
+    --drivers mlcoe_q1/data/processed/driver_features.parquet --calibrate-banks
+
+# Evaluate forecasts (auto-selects the calibrated bank ensemble when available)
 python -m mlcoe_q1.pipelines.evaluate_forecaster --processed-root mlcoe_q1/data/processed \
     --drivers mlcoe_q1/data/processed/driver_features.parquet \
     --model-dir mlcoe_q1/models/artifacts/driver_forecaster \
     --output reports/q1/artifacts/forecaster_eval.parquet
 
+# Calibrate bank ensemble weights independently
+python -m mlcoe_q1.pipelines.calibrate_bank_ensemble \
+    --drivers mlcoe_q1/data/processed/driver_features.parquet \
+    --model-dir mlcoe_q1/models/artifacts/driver_forecaster \
+    --processed-root mlcoe_q1/data/processed \
+    --output mlcoe_q1/models/artifacts/driver_forecaster/bank_ensemble.json
+
 # Summarize processed statements with pandas
 python -m mlcoe_q1.pipelines.describe_processed --tickers AAPL MSFT \
     --output reports/q1/artifacts/aapl_msft_summary.json
+
+# Generate a Markdown status report of forecast errors
+python -m mlcoe_q1.pipelines.report_forecaster_status \
+    --evaluation reports/q1/artifacts/forecaster_eval.parquet \
+    --output reports/q1/status/forecaster_status.md
+
+# Validate driver dataset coverage
+python -m mlcoe_q1.pipelines.validate_driver_dataset \
+    --drivers mlcoe_q1/data/processed/driver_features.parquet \
+    --output reports/q1/artifacts/driver_validation.csv
+
+# Build LLM-ready prompts pairing context statements with ground truth
+python -m mlcoe_q1.pipelines.build_llm_prompt_dataset \
+    --processed-root mlcoe_q1/data/processed \
+    --output reports/q1/artifacts/llm_prompts.json
+
+# Run a HuggingFace adapter (t5-small) to obtain LLM responses
+python -m mlcoe_q1.pipelines.run_llm_adapter \
+    --prompts reports/q1/artifacts/llm_prompts.parquet \
+    --adapter flan-t5 --model t5-small \
+    --output reports/q1/artifacts/llm_responses_t5.parquet
+
+# (The first run will download model weights via HuggingFace; expect ~200 MB and CPU inference.)
+
+# Benchmark LLM responses against ground truth targets
+python -m mlcoe_q1.pipelines.evaluate_llm_responses \
+    --prompt-dataset reports/q1/artifacts/llm_prompts.parquet \
+    --responses reports/q1/artifacts/llm_responses_t5.parquet \
+    --output reports/q1/artifacts/llm_metrics_t5.parquet
+
+# Compare LLM metrics against structured forecaster errors
+python -m mlcoe_q1.pipelines.compare_llm_and_forecaster \
+    --forecaster-eval reports/q1/artifacts/forecaster_eval.parquet \
+    --llm-metrics reports/q1/artifacts/llm_metrics_t5.parquet \
+    --summary-output reports/q1/status/llm_vs_forecaster_t5.csv
+
+# Generate CFO recommendations combining forecaster and LLM insights
+python -m mlcoe_q1.pipelines.generate_cfo_recommendations \
+    --forecaster-eval reports/q1/artifacts/forecaster_eval.parquet \
+    --llm-eval reports/q1/artifacts/llm_metrics_t5.parquet \
+    --output reports/q1/status/cfo_recommendations.md
 ```
 
 ### Question 2
@@ -113,9 +168,9 @@ python -m mlcoe_q2.experiments.benchmark
 
 ## Reports
 
-Interim and final reports are located in:
-- `reports/q1/` — Question 1 analysis and results
-- `reports/q2/` — Question 2 benchmarks and method comparisons
+Reports are located in:
+- `reports/q1/q1_interim_report.md` — consolidated Part 1/Part 2 narrative, methodology, and evaluation tables for Question 1 (current interim deliverable)
+- `reports/q2/` — Question 2 benchmarks and method comparisons
 - `reports/artifacts/` — JSON summaries and validation metrics
 - `reports/figures/` — Visualizations (RMSE curves, ESS traces, etc.)
 

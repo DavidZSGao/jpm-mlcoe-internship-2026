@@ -40,28 +40,35 @@ def _validate_columns(df: pd.DataFrame, required: Iterable[str]) -> None:
         raise KeyError(f"Evaluation artifact is missing columns: {missing}")
 
 
-def _summarize(df: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame:
-    metrics = [
+def summarize_metrics(df: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame:
+    required = [
         "assets_mae",
         "equity_mae",
         "identity_gap",
     ]
-    _validate_columns(df, list(group_by) + metrics)
+    optional_income = "net_income_mae" in df.columns
+    _validate_columns(df, list(group_by) + required)
 
-    summary = (
-        df.groupby(list(group_by))
-        .agg(
-            observations=("assets_mae", "count"),
-            assets_mae_mean=("assets_mae", "mean"),
-            assets_mae_median=("assets_mae", "median"),
-            assets_mae_max=("assets_mae", "max"),
-            equity_mae_mean=("equity_mae", "mean"),
-            equity_mae_median=("equity_mae", "median"),
-            equity_mae_max=("equity_mae", "max"),
-            identity_gap_mean=("identity_gap", "mean"),
+    aggregations = {
+        "observations": ("assets_mae", "count"),
+        "assets_mae_mean": ("assets_mae", "mean"),
+        "assets_mae_median": ("assets_mae", "median"),
+        "assets_mae_max": ("assets_mae", "max"),
+        "equity_mae_mean": ("equity_mae", "mean"),
+        "equity_mae_median": ("equity_mae", "median"),
+        "equity_mae_max": ("equity_mae", "max"),
+        "identity_gap_mean": ("identity_gap", "mean"),
+    }
+    if optional_income:
+        aggregations.update(
+            {
+                "net_income_mae_mean": ("net_income_mae", "mean"),
+                "net_income_mae_median": ("net_income_mae", "median"),
+                "net_income_mae_max": ("net_income_mae", "max"),
+            }
         )
-        .reset_index()
-    )
+
+    summary = df.groupby(list(group_by)).agg(**aggregations).reset_index()
     return summary.sort_values(list(group_by)).reset_index(drop=True)
 
 
@@ -90,7 +97,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         logging.warning("Evaluation artifact is empty; nothing to summarise")
         summary = df
     else:
-        summary = _summarize(df, args.group_by)
+        summary = summarize_metrics(df, args.group_by)
 
     if summary.empty:
         logging.info("No records available after summarisation")

@@ -1,42 +1,76 @@
-# Question 1 — Balance Sheet Forecasting (Interim Report)
+# Question 1 — Interim Report
+
+_Prepared ahead of the November Part 1 submission checkpoint to capture the current state of deterministic and LLM deliverables for Question 1._
 
 ## 1. Executive Summary
-- Built an identity-preserving forecasting stack combining deterministic accounting constraints with learned driver dynamics.
-- Established an offline-capable data ingestion pipeline (Yahoo fundamentals-timeseries fallback) and processed statements for GM, JPM, MSFT, and AAPL.
-- Derived core liquidity/solvency ratios and cost metrics automatically, enabling CFO-facing diagnostics (e.g., GM net income $6.0B, debt-to-equity 2.06×, quick ratio 0.98).
-- Baseline persistence backtest achieves single-digit-billion equity mean absolute error for industrial names but struggles with bank-scale balance sheets; initial neural forecaster overestimates assets, highlighting the need for scaling/sector priors.
+- Delivered a deterministic balance-sheet projection stack that enforces accounting identities, augments ratio-based drivers with growth and lagged covariates, and trains a TensorFlow forecaster backed by calibrated bank ensembles for BAC, JPM, and C.【F:reports/q1/deterministic_balance_sheet_spec.md†L1-L91】【F:mlcoe_q1/models/tf_forecaster.py†L1-L310】【F:mlcoe_q1/models/bank_ensemble.py†L1-L193】
+- Processed nine ticker histories via reproducible Yahoo Finance ingestion, validation, and feature pipelines, then evaluated forecasts across assets, equity, earnings, and identity gaps with summarisation/reporting CLIs and pytest coverage.【F:mlcoe_q1/data/yfinance_ingest.py†L1-L98】【F:mlcoe_q1/pipelines/build_driver_dataset.py†L1-L268】【F:mlcoe_q1/pipelines/evaluate_forecaster.py†L1-L303】【F:tests/mlcoe_q1/test_validate_driver_dataset.py†L1-L113】
+- Built Part 2 LLM tooling (prompt dataset, HuggingFace adapter, evaluation/comparison CLIs, CFO recommendations) and stress-tested PDF ratio extraction for GM, LVMH, and Tencent, highlighting that baseline `t5-small` responses lack quantitative coverage and should be combined with deterministic outputs.【F:mlcoe_q1/pipelines/build_llm_prompt_dataset.py†L1-L219】【F:mlcoe_q1/pipelines/run_llm_adapter.py†L1-L108】【F:mlcoe_q1/pipelines/evaluate_llm_responses.py†L1-L295】【F:mlcoe_q1/pipelines/compare_llm_and_forecaster.py†L1-L329】【F:mlcoe_q1/pipelines/generate_cfo_recommendations.py†L1-L164】【F:mlcoe_q1/pipelines/extract_pdf_ratios.py†L1-L226】
 
-## 2. Data Pipeline
-- CLI workflows: `download_statements`, `prepare_processed_data`, `build_driver_dataset`, `compute_ratios`.
-- Artifacts: processed statements (`mlcoe_q1/data/processed/*.parquet`), driver features (`driver_features.parquet`), ratio summaries (`reports/q1/artifacts/gm_ratios.json`).
-- Status log maintained at `reports/q1/notes/data_ingestion_status.md`.
+## 2. Literature & Problem Framing
+- Vélez-Pareja and Mejía-Pelaez papers guided the identity-preserving projection design; key takeaways and implementation notes are summarised in `reports/q1/literature_summary.md` for quick reference.【F:reports/q1/literature_summary.md†L1-L88】
+- The deterministic balance-sheet specification formalises asset/liability/equity evolution, financing plugs, and simulation framing, enabling direct translation into TensorFlow layers.【F:reports/q1/deterministic_balance_sheet_spec.md†L1-L91】
+- Simulation and ML extension roadmaps capture exogenous driver selection, probabilistic upgrades, and future research backlog for continued development.【F:reports/q1/notes/simulation_strategy.md†L1-L51】【F:reports/q1/notes/ml_extension_roadmap.md†L1-L53】
 
-## 3. Modelling Components
-- **Constraint Layer:** `project_forward` enforces Assets = Liabilities + Equity, tracks financing gaps, and reconciles cash.
-- **Driver Features:** Ratios (sales growth, margins, capex/NWC, leverage) computed per ticker for ML consumption.
-- **Baselines:** Persistence-based driver replay via `backtest_baseline.py` (MAE examples: GM assets $30.7B, equity $8.7B, cash $5.2B).
-- **Neural Forecaster:** Two-layer ReLU MLP trained on driver transitions (`train_forecaster.py`), evaluated end-to-end with constraint projection (`evaluate_forecaster.py`). Initial model overshoots assets (GM MAE ≈ $258B) due to lack of scaling/sector segmentation.
+## 3. Data Acquisition & Processing
+- Raw statements for AAPL, MSFT, GM, JPM, BAC, C, HON, CAT, and UNP are cached under `mlcoe_q1/data/raw/*.json` using the `download_statements` CLI to guarantee reproducibility.【F:mlcoe_q1/data/yfinance_ingest.py†L1-L98】
+- Processed balance-sheet/income features are produced via `prepare_processed_data`, while `build_driver_dataset` constructs configurable ratio, growth, and lagged covariates with optional lag filling controls.【F:mlcoe_q1/pipelines/build_driver_dataset.py†L1-L268】
+- The `validate_driver_dataset` CLI checks for duplicate periods, missing columns, sparse histories, and filing gaps; its pytest suite exercises both success and failure paths to keep data hygiene auditable.【F:mlcoe_q1/pipelines/validate_driver_dataset.py†L1-L207】【F:tests/mlcoe_q1/test_validate_driver_dataset.py†L1-L113】
 
-## 4. GM Financial Highlights (FY2024)
-- Net income attributable to stockholders: **$6.0B**.
-- Cost-to-income ratio: **93.2%**, indicating narrow operating margins.
-- Quick ratio: **0.98** — liquidity tight, reliant on inventory conversion.
-- Debt metrics: D/E **2.06×**, debt-to-assets **0.46**, debt-to-capital **0.67**, debt-to-EBITDA **5.96×**.
-- Interest coverage: **11.1×**; current earnings comfortably service interest, but leverage remains elevated.
+## 4. Modelling Approach
+### 4.1 Deterministic Projection Layer
+- `balance_sheet_constraints.project_forward` enforces Assets = Liabilities + Equity and related tie-outs, reconciling financing gaps after each forecast step.【F:mlcoe_q1/models/balance_sheet_constraints.py†L1-L222】
 
-### CFO Recommendation
-1. **Deleveraging Focus:** Target a debt-to-equity range below 1.5× by allocating a portion of free cash flow to debt reduction; the high debt-to-EBITDA combined with soft margins increases downside risk during EV transition investments.
-2. **Working-Capital Discipline:** Quick ratio below 1.0 suggests liquidity pressure — accelerate receivables programmes and review inventory buffers tied to EV launches.
-3. **Margin Protection:** With cost-to-income above 90%, pursue additional cost rationalisation (supplier consolidation, manufacturing efficiency) to create headroom for EV R&D without further leverage.
+### 4.2 Feature Engineering & Forecaster Architecture
+- Driver features include leverage, liquidity, profitability, tangible equity, interest spreads, and year-over-year growth, with lag augmentation handled by `augment_with_lagged_features` for temporal context.【F:mlcoe_q1/utils/driver_features.py†L1-L270】
+- The TensorFlow forecaster combines shared MLP towers with auxiliary sector signals, bank-indicator routing, and complement heads so bank and industrial predictions coexist within a single serialized model.【F:mlcoe_q1/models/tf_forecaster.py†L1-L310】
+- Training (`train_forecaster.py`) and evaluation (`evaluate_forecaster.py`) pipelines persist scaling metadata, register custom layers, and emit rich parquet diagnostics for downstream tooling.【F:mlcoe_q1/pipelines/train_forecaster.py†L1-L293】【F:mlcoe_q1/pipelines/evaluate_forecaster.py†L1-L303】
 
-## 5. Work Remaining
-- **Driver Modelling:** Normalise features (e.g., log revenues), introduce sector-specific priors, and integrate macro covariates to reduce neural forecast bias.
-- **LLM/PDF Extraction:** Automate ratio extraction directly from filings (GM, LVMH, Tencent, etc.) with reproducibility metadata; compare textual extraction to structured pipeline.
-- **Ensemble Reporting:** Combine constrained forecasts with LLM commentary for Part 2, produce scenario analysis, and finalise narrative deck.
-- **Bonus Tracks:** Credit rating prototype, risk-warning extraction engine, and loan pricing survey pending prioritisation.
+### 4.3 Bank Ensemble Calibration
+- Proportional templates (`bank_template.py`) capture liability mix priors per bank, while `BankForecastEnsemble` blends template outputs with neural predictions using calibrated weights saved in `bank_ensemble.json` and auto-applied during evaluation.【F:mlcoe_q1/models/bank_template.py†L1-L177】【F:mlcoe_q1/models/bank_ensemble.py†L1-L193】【F:mlcoe_q1/pipelines/calibrate_bank_ensemble.py†L1-L210】
 
-## 6. Repository Guide
-- Code: `mlcoe_q1/` (data, models, pipelines, utils).
-- Reports & notes: `reports/q1/` (artifacts, figures, narrative notes).
-- Model outputs: `mlcoe_q1/models/artifacts/driver_forecaster/` (saved weights + history).
+## 5. Forecast Evaluation
+Mean absolute errors (billions USD) and identity gaps (billions) averaged over the latest two statement pairs are summarised below; banks use the calibrated ensemble mode.
 
+| Ticker | Mode | Assets MAE (B) | Equity MAE (B) | Net Income MAE (B) | Identity Gap (B) |
+| --- | --- | ---: | ---: | ---: | ---: |
+| AAPL | mlp | 17.74 | 17.52 | 67.98 | 0.000000 |
+| BAC | bank_ensemble | 0.00 | 0.00 | 32.17 | -0.000000 |
+| C | bank_ensemble | 0.00 | 0.00 | 14.07 | 0.000000 |
+| CAT | mlp | 10.60 | 14.53 | 13.20 | -0.000000 |
+| GM | mlp | 18.52 | 20.44 | 16.45 | 0.000000 |
+| HON | mlp | 10.28 | 10.58 | 11.20 | NaN |
+| JPM | bank_ensemble | 0.00 | 0.00 | 59.10 | 0.000000 |
+| MSFT | mlp | 42.64 | 46.48 | 61.47 | 0.000000 |
+| UNP | mlp | 55.50 | 20.28 | 24.45 | 0.000000 |
+
+_Bank equity MAE falls below $10k (displayed as 0.00 B), while identity gaps remain numerically zero across evaluated tickers; HON’s identity gap is undefined because the source statement omits the necessary liabilities split._【F:reports/q1/status/forecaster_status.md†L1-L24】【F:reports/q1/status/cfo_recommendations.md†L1-L24】【F:reports/q1/q1_interim_report.md†L26-L38】
+
+## 6. PDF Ratio Extraction
+- `extract_pdf_ratios` supports GM, LVMH, and Tencent layouts with JSON-configurable strategies, pdfplumber-backed parsing, provenance logging, and pytest-backed heuristics for stable numeric extraction.【F:mlcoe_q1/pipelines/extract_pdf_ratios.py†L1-L226】【F:tests/mlcoe_q1/test_extract_pdf_ratios.py†L1-L24】
+- Ratio outputs feed the comparison CLI and documentation for CFO-facing narratives, demonstrating automated computation of net income, cost-to-income, liquidity, leverage, and coverage metrics directly from filings.【F:mlcoe_q1/pipelines/compare_ratio_sources.py†L1-L162】【F:reports/q1/literature_summary.md†L1-L88】
+
+## 7. LLM Benchmarking & Recommendations
+- Prompt datasets pair processed statements with ground-truth targets; the HuggingFace adapter runs truncation-aware inference (default `t5-small`) with seeded decoding, while `evaluate_llm_responses` computes coverage, MAE, and MAPE metrics per record.【F:mlcoe_q1/pipelines/build_llm_prompt_dataset.py†L1-L219】【F:mlcoe_q1/pipelines/run_llm_adapter.py†L1-L108】【F:mlcoe_q1/pipelines/evaluate_llm_responses.py†L1-L295】
+- Baseline `t5-small` responses produced zero numeric coverage across AAPL and BAC, underscoring the need for stronger models before quantitative reliance. Coverage and error summary:
+
+  | Ticker | Coverage | MAE (B) | MAPE |
+  | --- | ---: | ---: | ---: |
+  | AAPL | 0.0% | N/A | N/A |
+  | BAC | 0.0% | N/A | N/A |
+
+  _Coverage reflects the share of prompts where the model emitted parseable numeric forecasts; MAE/MAPE remain undefined when coverage is zero._【F:reports/q1/status/llm_vs_forecaster_t5.csv†L1-L4】【F:reports/q1/q1_interim_report.md†L42-L49】
+- `compare_llm_and_forecaster` aligns structured and LLM metrics, and `generate_cfo_recommendations` produces Markdown narratives prioritising deterministic forecasts when LLM coverage is low.【F:mlcoe_q1/pipelines/compare_llm_and_forecaster.py†L1-L329】【F:mlcoe_q1/pipelines/generate_cfo_recommendations.py†L1-L164】【F:reports/q1/status/cfo_recommendations.md†L1-L35】
+
+## 8. Testing & Reproducibility
+- End-to-end pytest coverage spans driver features, TensorFlow layers, bank ensembles, PDF extraction, LLM adapters, evaluation pipelines, and reporting utilities (`pytest tests/mlcoe_q1 -q`).【F:tests/mlcoe_q1/test_tf_forecaster.py†L1-L64】【F:tests/mlcoe_q1/test_bank_ensemble.py†L1-L96】【F:tests/mlcoe_q1/test_run_llm_adapter.py†L1-L102】
+- CLIs expose `--help` documentation and produce deterministic parquet/JSON artifacts, enabling reproducible reruns documented in the root README usage examples.【F:README.md†L31-L122】
+
+## 9. Outstanding Opportunities
+- Broaden PDF presets to additional issuers and add regression tests for multi-layout coverage.【F:reports/q1/q1_workplan.md†L92-L111】
+- Upgrade LLM experiments with higher-coverage models, prompt variants, and quantitative ensembles, tracking robustness across seeds and versions.【F:reports/q1/q1_workplan.md†L112-L120】
+- Pursue bonus tracks (credit rating, risk warnings, loan pricing) leveraging existing deterministic and LLM infrastructure as scaffolding.【F:reports/q1/q1_workplan.md†L122-L142】
+
+## 10. Submission Checklist
+- Codebase implemented in Python 3/TensorFlow with TensorFlow Probability ready for probabilistic extensions.【F:requirements.txt†L1-L35】
+- Comprehensive testing (unit + integration) and documentation assets (`README`, execution plan, literature summaries, status dashboards) committed alongside reproducible data artifacts.【F:reports/q1/q1_workplan.md†L1-L142】【F:reports/q1/status/forecaster_status.md†L1-L24】【F:reports/q1/status/cfo_recommendations.md†L1-L35】

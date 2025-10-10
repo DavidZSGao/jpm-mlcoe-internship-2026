@@ -65,7 +65,25 @@ _CANDIDATES: Dict[str, Sequence[str]] = {
         "assets",
     ),
     "net_income": ("netIncome", "netIncomeCommonStockholders"),
+    "net_interest_income": ("netInterestIncome",),
+    "interest_income": ("interestIncome",),
+    "interest_expense": ("interestExpense",),
+    "tangible_equity": ("tangibleBookValue", "netTangibleAssets"),
 }
+
+
+BASE_FEATURES = list(DriverFeatures.__annotations__.keys())
+
+OPTIONAL_FEATURES = [
+    "tangible_equity_ratio",
+    "net_interest_margin",
+    "interest_income_ratio",
+    "interest_expense_ratio",
+    "asset_growth",
+    "equity_growth",
+    "net_income_growth",
+    "tangible_equity_growth",
+]
 
 
 def _pick(series_frame: pd.DataFrame, candidates: Sequence[str]) -> pd.Series:
@@ -97,12 +115,14 @@ def compute_driver_frame(df: pd.DataFrame) -> pd.DataFrame:
     ebit = _pick(income, _CANDIDATES['ebit'])
     ebit_margin = ebit.divide(sales)
 
-    depreciation = _pick(cashflow, _CANDIDATES['depreciation']).abs()
-    capex = _pick(cashflow, _CANDIDATES['capex']).abs()
+    depreciation = pd.to_numeric(
+        _pick(cashflow, _CANDIDATES['depreciation']), errors='coerce'
+    ).abs()
+    capex = pd.to_numeric(_pick(cashflow, _CANDIDATES['capex']), errors='coerce').abs()
 
-    receivables = _pick(balance, _CANDIDATES['receivables'])
-    inventory = _pick(balance, _CANDIDATES['inventory'])
-    payables = _pick(balance, _CANDIDATES['payables'])
+    receivables = pd.to_numeric(_pick(balance, _CANDIDATES['receivables']), errors='coerce')
+    inventory = pd.to_numeric(_pick(balance, _CANDIDATES['inventory']), errors='coerce')
+    payables = pd.to_numeric(_pick(balance, _CANDIDATES['payables']), errors='coerce')
 
     nwc = receivables + inventory - payables
     nwc_ratio = nwc.divide(sales)
@@ -110,14 +130,40 @@ def compute_driver_frame(df: pd.DataFrame) -> pd.DataFrame:
     depreciation_ratio = depreciation.divide(sales)
     capex_ratio = capex.divide(sales)
 
-    net_income = _pick(income, _CANDIDATES['net_income'])
-    dividends = _pick(cashflow, _CANDIDATES['dividends']).abs()
+    net_income = pd.to_numeric(_pick(income, _CANDIDATES['net_income']), errors='coerce')
+    dividends = pd.to_numeric(_pick(cashflow, _CANDIDATES['dividends']), errors='coerce').abs()
     payout_ratio = dividends.divide(net_income).replace([pd.NA, pd.NaT], 0)
 
-    debt = _pick(balance, _CANDIDATES['debt'])
-    equity = _pick(balance, _CANDIDATES['equity'])
+    debt = pd.to_numeric(_pick(balance, _CANDIDATES['debt']), errors='coerce')
+    equity = pd.to_numeric(_pick(balance, _CANDIDATES['equity']), errors='coerce')
     leverage_ratio = debt.divide(debt + equity)
     sales_per_asset = sales.divide(assets)
+
+    net_interest_income = pd.to_numeric(
+        _pick(income, _CANDIDATES["net_interest_income"]), errors="coerce"
+    )
+    interest_income = pd.to_numeric(
+        _pick(income, _CANDIDATES["interest_income"]), errors="coerce"
+    )
+    interest_expense = pd.to_numeric(
+        _pick(income, _CANDIDATES["interest_expense"]), errors="coerce"
+    ).abs()
+    tangible_equity = pd.to_numeric(
+        _pick(balance, _CANDIDATES["tangible_equity"]), errors="coerce"
+    )
+
+    if net_interest_income.replace(0, pd.NA).isna().all():
+        net_interest_income = interest_income.subtract(interest_expense, fill_value=0)
+
+    net_interest_margin = net_interest_income.divide(assets)
+    interest_income_ratio = interest_income.divide(assets)
+    interest_expense_ratio = interest_expense.divide(assets)
+    tangible_equity_ratio = tangible_equity.divide(assets)
+
+    asset_growth = assets.pct_change(fill_method=None)
+    equity_growth = equity.pct_change(fill_method=None)
+    net_income_growth = net_income.pct_change(fill_method=None)
+    tangible_equity_growth = tangible_equity.pct_change(fill_method=None)
 
     out = pd.DataFrame({
         'sales': sales,
@@ -130,10 +176,55 @@ def compute_driver_frame(df: pd.DataFrame) -> pd.DataFrame:
         'nwc_ratio': nwc_ratio,
         'payout_ratio': payout_ratio,
         'leverage_ratio': leverage_ratio,
+        'tangible_equity_ratio': tangible_equity_ratio,
+        'net_interest_margin': net_interest_margin,
+        'interest_income_ratio': interest_income_ratio,
+        'interest_expense_ratio': interest_expense_ratio,
+        'asset_growth': asset_growth,
+        'equity_growth': equity_growth,
+        'net_income_growth': net_income_growth,
+        'tangible_equity_growth': tangible_equity_growth,
     })
     cleaned = out.apply(pd.to_numeric, errors='coerce')
     cleaned = cleaned.mask(~np.isfinite(cleaned))
-    return cleaned.dropna()
+    cleaned = cleaned.dropna(subset=BASE_FEATURES)
+    fill_defaults = {feature: 0.0 for feature in OPTIONAL_FEATURES if feature in cleaned.columns}
+    if fill_defaults:
+        cleaned = cleaned.fillna(value=fill_defaults)
+    return cleaned
+
+
+def augment_with_lagged_features(
+    df: pd.DataFrame,
+    columns: Sequence[str],
+    lags: int,
+    *,
+    drop_missing: bool = True,
+) -> pd.DataFrame:
+    """Append lagged versions of the specified columns for each ticker."""
+
+    if lags <= 0 or not columns:
+        return df
+
+    augmented = df.copy()
+    if 'period' in augmented.columns:
+        augmented['period'] = pd.to_datetime(augmented['period'])
+
+    augmented = augmented.sort_values(['ticker', 'period']).reset_index(drop=True)
+
+    generated: list[str] = []
+    for column in columns:
+        if column not in augmented.columns:
+            continue
+        for lag in range(1, lags + 1):
+            lagged_name = f"{column}_lag{lag}"
+            augmented[lagged_name] = augmented.groupby('ticker')[column].shift(lag)
+            generated.append(lagged_name)
+
+    if drop_missing and generated:
+        augmented = augmented.dropna(subset=generated)
+
+    return augmented
 
 
 def compute_drivers_for_ticker(root: Path, ticker: str) -> pd.DataFrame:
@@ -148,9 +239,13 @@ def compute_drivers(root: Path, tickers: Iterable[str]) -> pd.DataFrame:
     frames = [compute_drivers_for_ticker(root, t) for t in tickers]
     return pd.concat(frames, ignore_index=True)
 
+
 __all__ = [
     "DriverFeatures",
+    "BASE_FEATURES",
+    "OPTIONAL_FEATURES",
     "compute_driver_frame",
+    "augment_with_lagged_features",
     "compute_drivers_for_ticker",
     "compute_drivers",
 ]
