@@ -1,0 +1,23 @@
+{
+  "seed": 3,
+  "pfpf_results": {
+    "PF_PF_LEDH": {
+      "runtime_s": 25652.004761635035,
+      "peak_memory_kb": 145837.2353515625,
+      "log_likelihood": -29.831783294677734,
+      "ess_mean": 179.4011993408203,
+      "aux_stats": {
+        "mean_flow_log_jacobian": -0.14056824147701263
+      }
+    },
+    "PF_PF_Stochastic": {
+      "runtime_s": 16018.720807490987,
+      "peak_memory_kb": 239157.037109375,
+      "log_likelihood": -26.00507926940918,
+      "ess_mean": 166.3654022216797,
+      "aux_stats": {
+        "mean_flow_log_jacobian": -0.18003350496292114
+      }
+    }
+  }
+}

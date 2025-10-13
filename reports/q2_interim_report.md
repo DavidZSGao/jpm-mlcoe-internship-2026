@@ -40,10 +40,17 @@ Aggregated over 5 seeds from `reports/artifacts/benchmark_filters_multiseed.json
 
 See `reports/q2/status/filter_status.md` for the generated status snapshot.
 
-## 6. PF-PF with Stochastic Flow (Planned)
-- Compare PF-PF using `StochasticParticleFlow` vs LEDH as proposals.
-- Metrics: log-likelihood, ESS, runtime/memory; stability via flow log-Jacobians.
-- Artifact: `reports/artifacts/pfpf_stochastic_multiseed.json`.
+## 6. PF-PF with Stochastic Flow (Completed)
+Aggregated over 5 seeds from `reports/artifacts/pfpf_stochastic_multiseed.json`.
+
+| Method | Runtime (s) | Peak Mem (KB) | Log-Likelihood | Mean ESS |
+| --- | ---: | ---: | ---: | ---: |
+| PF_PF_LEDH | 23613.95 ± 1597.64 | 146100.40 ± 520.79 | -17.81 ± 6.26 | 179.18 ± 5.78 |
+| PF_PF_Stochastic | 15459.71 ± 672.27 | 239114.86 ± 87.99 | -8.37 ± 10.32 | 176.48 ± 8.91 |
+
+Notes:
+- Stochastic flow is ~35% faster and improves (less negative) log-likelihood with similar ESS.
+- Higher peak memory reflects diffusion and additional computations.
 
 ## 7. Reproducing Li (2017) Plots (Planned)
 - Use `benchmark.py` flow diagnostics to recreate comparative plots.
