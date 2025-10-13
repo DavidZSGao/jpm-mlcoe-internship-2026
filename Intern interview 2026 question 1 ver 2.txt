@@ -18,8 +18,8 @@ Part 1.  Modeling of a balance sheet
 	•	What are the ML techniques we can use to your model to make it better?
 	•	Hint: simulation is highly related to prediction.  Suppose that you can simulate y(t+1) given y(t).  The prediction problem is very simple to implement numerically.  A general form of the model can be written as y(t+1) = f( x(t), y(t) ) + n(t),  where n(t) is some noise term to be specified, and x(t) are additional sets of variables that are relevant for the simulation.  What should x(t) be?  
 
-Part 2. Consider the problem of paper Kim(24) applying large language model to financial statement analysis.
-	•	Choose your favourite LLM to apply the problem of financial statement analysis.
+Part 2. Consider the problem of applying large language model to financial statement analysis, such as what has been done in Alonso(24), Farr(25), and Zhang(25). 
+	•	Choose your favourite LLM to apply the problem of financial statement analysis.  
 	•	Let’s try the task of balance sheet forecast using the same set of data as collected in part 1, does the LLM you picked perform better or worse than your model?
 	•	Is it possible to combine your model in part 1 and LLM to create an ensemble model that performs better than the individual model in balance sheet forecast?
 	•	Given the results of your analysis, pick a company you have analysed, what would you recommend to the CFO or CEO of this particular company given your results?  
@@ -55,7 +55,9 @@ Suppose we would like to build a model to suggest the interest to be charged for
 
 References
 
-[Kim(24)] A. Kim, M. Muhn, and V. V. Nikolaev, “Financial statement analysis with large language models,” Chicago Booth Research Paper Forthcoming, Fama-Miller Working Paper, 2024, https://arxiv.org/abs/2407.17866
+[Alonso(24)] Miquel Alonso, Hanane Dupouy, “Large Language Models as Financial Analysts” https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4945481
+[Farr(25)] Marcelo Farr, William Johnson, Ariel Markelevich and Alexis Montecinos, “AI Determinants of Success and Failure: The Case of Financial statements” https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5316518
+
 [Pelaez(11)] Mejia-Pelaez, F., and I. Vélez-Pareja, 2011, “Analytical Solution to the Circularity Problem in the Discounted Cash Flow Valuation Framework”, Innovar, 21 (42), , pp. 55-68. Available at: http://ssrn.com/abstract=1596426.
 
 [Pareja(07)] Vélez-Pareja, Ignacio, (2007), “Forecasting Financial Statements with No Plugs and No Circularity”, Available at SSRN: http://ssrn.com/
@@ -67,3 +69,5 @@ http://ssrn.com/abstract=1455304.
 
 [Shahnazarian(04)] Shahnazarian, H 2004, 'A Dynamic Microeconometric Simulation Model for Incorporated Business', Sveriges Riskbank Occasional Paper Series, vol. 11.  https://www.riksbank.se/contentassets/09fcffd6cace4be8a915f3de3c010852/occp_11.pdf
 
+[Zhang(25)] Haichao Zhang, Jie Zhang and Jiancheng Zhou, “Research on Financial Statement Checking Relationship Recognition System Based on Large Language Models”
+https://dl.acm.org/doi/pdf/10.1145/3745238.3745291

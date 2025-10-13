@@ -62,6 +62,21 @@ Figures (by flow variant):
 - KernelDiagonal: `reports/figures/li2017_KernelDiagonal_residuals.png`, `li2017_KernelDiagonal_movement.png`, `li2017_KernelDiagonal_logjac.png`
 - KernelMatrix: `reports/figures/li2017_KernelMatrix_residuals.png`, `li2017_KernelMatrix_movement.png`, `li2017_KernelMatrix_logjac.png`
 
+### KernelScalar
+![KernelScalar residuals](figures/li2017_KernelScalar_residuals.png)
+![KernelScalar movement](figures/li2017_KernelScalar_movement.png)
+![KernelScalar |log-J|](figures/li2017_KernelScalar_logjac.png)
+
+### KernelDiagonal
+![KernelDiagonal residuals](figures/li2017_KernelDiagonal_residuals.png)
+![KernelDiagonal movement](figures/li2017_KernelDiagonal_movement.png)
+![KernelDiagonal |log-J|](figures/li2017_KernelDiagonal_logjac.png)
+
+### KernelMatrix
+![KernelMatrix residuals](figures/li2017_KernelMatrix_residuals.png)
+![KernelMatrix movement](figures/li2017_KernelMatrix_movement.png)
+![KernelMatrix |log-J|](figures/li2017_KernelMatrix_logjac.png)
+
 ## 8. Notes & Optimizations
 - Address TensorFlow retracing: cache `tf.function`s or use `reduce_retracing=True` in hot paths.
 - Consider GPU for EDH/LEDH and OT resampling to reduce runtime.
