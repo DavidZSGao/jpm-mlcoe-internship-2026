@@ -76,3 +76,13 @@ Aggregated over 5 seeds from `reports/artifacts/pfpf_stochastic_multiseed.json`.
 Notes:
 - Stochastic flow is ~35% faster with better (less negative) log-likelihood and similar ESS.
 - Memory usage increases for Stochastic due to diffusion and additional computations.
+
+## Li (2017)-Style Diagnostics (Kernel Flows)
+Figures generated via `mlcoe_q2/experiments/plot_flow_diagnostics.py`.
+
+Artifacts index: `reports/q2/status/li2017_plots.md`
+
+Figures (by flow variant):
+- KernelScalar: `reports/figures/li2017_KernelScalar_residuals.png`, `li2017_KernelScalar_movement.png`, `li2017_KernelScalar_logjac.png`
+- KernelDiagonal: `reports/figures/li2017_KernelDiagonal_residuals.png`, `li2017_KernelDiagonal_movement.png`, `li2017_KernelDiagonal_logjac.png`
+- KernelMatrix: `reports/figures/li2017_KernelMatrix_residuals.png`, `li2017_KernelMatrix_movement.png`, `li2017_KernelMatrix_logjac.png`

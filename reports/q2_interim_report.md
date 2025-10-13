@@ -52,9 +52,15 @@ Notes:
 - Stochastic flow is ~35% faster and improves (less negative) log-likelihood with similar ESS.
 - Higher peak memory reflects diffusion and additional computations.
 
-## 7. Reproducing Li (2017) Plots (Planned)
-- Use `benchmark.py` flow diagnostics to recreate comparative plots.
-- Deliverables: flow movement, residual before/after, log-det Jacobian trends.
+## 7. Reproducing Li (2017) Plots (Completed)
+Figures generated via `mlcoe_q2/experiments/plot_flow_diagnostics.py` for Kernel flows.
+
+Artifacts index: `reports/q2/status/li2017_plots.md`
+
+Figures (by flow variant):
+- KernelScalar: `reports/figures/li2017_KernelScalar_residuals.png`, `li2017_KernelScalar_movement.png`, `li2017_KernelScalar_logjac.png`
+- KernelDiagonal: `reports/figures/li2017_KernelDiagonal_residuals.png`, `li2017_KernelDiagonal_movement.png`, `li2017_KernelDiagonal_logjac.png`
+- KernelMatrix: `reports/figures/li2017_KernelMatrix_residuals.png`, `li2017_KernelMatrix_movement.png`, `li2017_KernelMatrix_logjac.png`
 
 ## 8. Notes & Optimizations
 - Address TensorFlow retracing: cache `tf.function`s or use `reduce_retracing=True` in hot paths.

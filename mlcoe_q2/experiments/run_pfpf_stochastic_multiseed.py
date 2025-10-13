@@ -29,8 +29,19 @@ ess_key = "ess_mean"
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--seeds", nargs="*", type=int, default=[0, 1, 2, 3, 4], help="List of seeds")
-    p.add_argument("--num-timesteps", type=int, default=15, help="Sequence length")
+    p.add_argument(
+        "--seeds",
+        nargs="*",
+        type=int,
+        default=[0, 1, 2, 3, 4],
+        help="List of seeds",
+    )
+    p.add_argument(
+        "--num-timesteps",
+        type=int,
+        default=15,
+        help="Sequence length",
+    )
     p.add_argument(
         "--outdir",
         type=Path,
@@ -55,12 +66,19 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def _ensure_dirs(paths: Iterable[Path]) -> None:
     for p in paths:
-        p.parent.mkdir(parents=True, exist_ok=True) if p.suffix else p.mkdir(parents=True, exist_ok=True)
+        if p.suffix:
+            p.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            p.mkdir(parents=True, exist_ok=True)
 
 
 def _run_seed(seed: int, num_timesteps: int) -> dict:
     model = _build_nonlinear_model()
-    _, observations = _simulate_sequence(model, num_timesteps=num_timesteps, seed=seed)
+    _, observations = _simulate_sequence(
+        model,
+        num_timesteps=num_timesteps,
+        seed=seed,
+    )
 
     ledh = _benchmark_pfpf(
         model,
@@ -111,7 +129,10 @@ def _aggregate(per_seed: list[dict]) -> dict:
 
 def _render_status_md(agg: dict) -> str:
     hdr = ["Method", "Runtime (s)", "Peak Mem (KB)", "LogLik", "Mean ESS"]
-    methods = list(next(iter(agg["metrics"].values())).keys()) if agg["metrics"] else []
+    methods: list[str] = []
+    if agg["metrics"]:
+        first = next(iter(agg["metrics"].values()))
+        methods = list(first.keys())
 
     def cell(metric: str, m: str) -> str:
         d = agg["metrics"][metric][m]
@@ -119,7 +140,12 @@ def _render_status_md(agg: dict) -> str:
             return "—"
         return f"{d['mean']:.2f} ± {d['std']:.2f}"
 
-    lines = ["# Q2 PF-PF Benchmark Status", "", "| " + " | ".join(hdr) + " |", "| " + " | ".join(["---"] * len(hdr)) + " |"]
+    lines = [
+        "# Q2 PF-PF Benchmark Status",
+        "",
+        "| " + " | ".join(hdr) + " |",
+        "| " + " | ".join(["---"] * len(hdr)) + " |",
+    ]
     for m in methods:
         row = [
             m,
@@ -155,7 +181,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         logging.info("Wrote %s", path)
 
     agg = _aggregate(per_seed)
-    args.aggregate_out.write_text(json.dumps(agg, indent=2))
+    json_agg = json.dumps(agg, indent=2)
+    args.aggregate_out.write_text(json_agg)
     logging.info("Wrote aggregate %s", args.aggregate_out)
 
     md = _render_status_md(agg)
