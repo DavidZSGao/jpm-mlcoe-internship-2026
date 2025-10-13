@@ -111,3 +111,17 @@ Figures (by flow variant):
 ![KernelMatrix residuals](figures/li2017_KernelMatrix_residuals.png)
 ![KernelMatrix movement](figures/li2017_KernelMatrix_movement.png)
 ![KernelMatrix |log-J|](figures/li2017_KernelMatrix_logjac.png)
+
+## High-Dimensional Kernel Flows (Hu, 2021)
+Demonstration of observed-marginal collapse prevention using matrix-valued kernels in higher dimensions.
+
+Artifacts index: `reports/q2/status/hu2021_plots.md`
+
+### KernelScalar (state=16, obs=4)
+![Observed variance](figures/hu2021_KernelScalar_obsvar.png)
+
+### KernelDiagonal (state=16, obs=4)
+![Observed variance](figures/hu2021_KernelDiagonal_obsvar.png)
+
+### KernelMatrix (state=16, obs=4)
+![Observed variance](figures/hu2021_KernelMatrix_obsvar.png)
