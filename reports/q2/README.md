@@ -8,6 +8,8 @@
 - Filters (multi-seed): `reports/q2/status/filter_status.md`
 - PF-PF (Stochastic vs LEDH): `reports/q2/status/pfpf_status.md`
 - Li (2017)-style Kernel flow plots: `reports/q2/status/li2017_plots.md`
+- Hu (2021)-style high-dimensional Kernel plots: `reports/q2/status/hu2021_plots.md`
+- Li (2017) PF-PF reproduction (EDH vs LEDH): `reports/q2/status/li2017_pfpf_reproduction.md`
 
 ## Key Artifacts
 - Filters aggregate: `reports/artifacts/benchmark_filters_multiseed.json`
@@ -32,3 +34,7 @@
   - `python -m mlcoe_q2.experiments.run_pfpf_stochastic_multiseed --seeds 0 1 2 3 4 --num-timesteps 15`
 - Li (2017) plots (Kernel flows):
   - `python -m mlcoe_q2.experiments.plot_flow_diagnostics --seeds 0 --num-timesteps 15 --particles 256`
+- Hu (2021) high-D Kernel plots:
+  - `python -m mlcoe_q2.experiments.plot_highdim_kernel_flows --seeds 0 --num-timesteps 10 --particles 256 --state-dim 16 --obs-dim 4`
+- Li (2017) PF-PF reproduction (EDH vs LEDH):
+  - `python -m mlcoe_q2.experiments.reproduce_li17_pfpf --seeds 0 1 2 --num-timesteps 15 --particles 256`
