@@ -156,3 +156,36 @@ Artifacts index: `reports/q2/status/pfpf_dai22.md`
 
 - **Accuracy**: `SPF_B (step=0.6, steps=8, diff=0.10)` improves log-likelihood over LEDH with similar ESS.
 - **Runtime/Memory**: Some SPF settings are faster than LEDH; higher diffusion/steps increase memory.
+
+### New multi-seed artifacts (Dai'22 variants)
+- `reports/artifacts/pfpf_dai22_seed_{0..4}.json`
+
+Across five seeds, the stochastic flow variant `SPF_B`:
+- **Log-likelihood**: improves over `LEDH` in most seeds (4/5), with one seed where `LEDH` is higher.
+- **Runtime**: comparable or slightly lower on average vs `LEDH` at this scale (tens of thousands of seconds on CPU-only runs).
+- **ESS**: remains in a similar range to `LEDH`.
+- **Memory**: ~2× higher peak memory than `LEDH`, consistent with additional diffusion computations.
+
+These results are consistent with the earlier PF-PF multi-seed comparison where stochastic flows offered a better likelihood–runtime trade-off at the cost of memory.
+
+
+## Bonus: PMMH vs HMC with Differentiable PF
+This bonus experiment compares a PMMH baseline (using a standard PF likelihood estimate) against an HMC sampler that leverages a differentiable particle filter (DPF) to obtain gradients on a small nonlinear SSM.
+
+- Script: `mlcoe_q2/experiments/pmmh_vs_hmc_dpf.py`
+- Example output: `reports/artifacts/bonus_pmmh_vs_hmc.json`
+
+Run:
+
+```bash
+PYTHONPATH=. python -m mlcoe_q2.experiments.pmmh_vs_hmc_dpf \
+  --num-steps 20 \
+  --num-particles 64 \
+  --pmmh-iters 200 \
+  --hmc-samples 200 \
+  --output reports/artifacts/bonus_pmmh_vs_hmc.json
+```
+
+Notes:
+- CPU-friendly scaffold to validate feasibility and compare acceptance/ESS trends.
+- Prior on `phi` is `N(0,1)`; `phi` parameterizes the observation noise log-std.
