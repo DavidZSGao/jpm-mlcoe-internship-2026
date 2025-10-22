@@ -1,0 +1,7 @@
+{
+  "scenarios": "reports/q1/artifacts/forecaster_scenarios.parquet",
+  "output": "reports/q1/artifacts/scenario_reasonableness.parquet",
+  "group_by": "scenario",
+  "interval_lower": "downside",
+  "interval_upper": "upside"
+}

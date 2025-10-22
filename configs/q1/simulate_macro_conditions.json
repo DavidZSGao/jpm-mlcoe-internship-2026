@@ -1,0 +1,5 @@
+{
+  "evaluation": "reports/q1/artifacts/forecaster_scenarios.parquet",
+  "output": "reports/q1/artifacts/macro_conditioned_scenarios.parquet",
+  "scenarios": "reports/q1/artifacts/macro_scenarios_example.json"
+}

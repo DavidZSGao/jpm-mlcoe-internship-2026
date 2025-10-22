@@ -1,0 +1,18 @@
+{
+  "summary_group_by": "ticker,mode",
+  "scenario_spec": "baseline:0.5,downside:0.1,upside:0.9",
+  "reasonableness_group_by": "scenario",
+  "macro_config": "reports/q1/artifacts/macro_scenarios_example.json",
+  "calibration_group_by": "ticker,mode",
+  "calibration_metrics": "assets,equity,net_income",
+  "coverage_target": 0.9,
+  "identity_threshold": 500000000.0,
+  "copy_artifacts": true,
+  "artifact": [
+    "executive_summary=reports/q1/status/executive_summary.md",
+    "risk_summary=reports/q1/artifacts/risk_warnings_summary.json"
+  ],
+  "audit_config": "configs/q1/lending_audit_expectations.json",
+  "zip_output": "reports/q1/deliverables/strategic_lending_bundle.zip",
+  "log_level": "INFO"
+}

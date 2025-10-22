@@ -6,7 +6,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Sequence, List, Mapping
+from typing import Sequence, List, Mapping, Iterable, Tuple
 
 import numpy as np
 import pandas as pd
@@ -17,6 +17,7 @@ from mlcoe_q1.models import tf_forecaster as _tf_forecaster  # noqa: F401 ensure
 from mlcoe_q1.models.bank_template import deserialize_templates, BankTemplate
 from mlcoe_q1.models.bank_ensemble import deserialize_ensemble, BankEnsembleWeights
 from mlcoe_q1.utils.state_extractor import extract_states, extract_income_metric_map
+from mlcoe_q1.utils.config import add_config_argument, parse_args_with_config
 
 BANK_TICKERS = {'JPM', 'BAC', 'C'}
 
@@ -49,8 +50,33 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="auto",
         help="Forecasting strategy for bank tickers",
     )
+    parser.add_argument(
+        "--mc-samples",
+        type=int,
+        default=0,
+        help=(
+            "Number of Monte Carlo dropout samples to draw for predictive "
+            "intervals (0 disables sampling)"
+        ),
+    )
+    parser.add_argument(
+        "--quantiles",
+        type=str,
+        default="0.1,0.5,0.9",
+        help=(
+            "Comma-separated quantiles (between 0 and 1) to report when "
+            "--mc-samples is enabled"
+        ),
+    )
+    parser.add_argument(
+        "--horizon",
+        type=int,
+        default=1,
+        help="Number of sequential steps to evaluate via recursive rollouts",
+    )
     parser.add_argument("--log-level", default="INFO")
-    return parser.parse_args(argv)
+    add_config_argument(parser)
+    return parse_args_with_config(parser, argv)
 
 
 def _sector_vector(ticker: str, aux_features: Sequence[str]) -> np.ndarray:
@@ -111,9 +137,117 @@ def row_to_driver(row: pd.Series) -> DriverVector:
     )
 
 
+def _parse_quantiles(raw: object) -> list[float]:
+    if isinstance(raw, str):
+        text = raw.strip()
+        if not text:
+            return []
+        if text.startswith("[") and text.endswith("]"):
+            try:
+                parsed = json.loads(text)
+            except json.JSONDecodeError:
+                parsed = text
+            else:
+                return _parse_quantiles(parsed)
+        tokens = [token.strip() for token in text.split(",")]
+        values: list[float] = []
+        for token in tokens:
+            if not token:
+                continue
+            try:
+                quantile = float(token)
+            except ValueError as exc:  # pragma: no cover - defensive guard
+                raise ValueError(f"Invalid quantile value: {token}") from exc
+            if not 0.0 <= quantile <= 1.0:
+                raise ValueError(
+                    f"Quantiles must fall within [0, 1]; received {quantile}"
+                )
+            values.append(quantile)
+        return sorted(set(values))
+
+    if isinstance(raw, Iterable):
+        values: list[float] = []
+        for item in raw:
+            values.extend(_parse_quantiles(item))
+        return sorted(set(values))
+
+    try:
+        quantile = float(raw)  # type: ignore[arg-type]
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Invalid quantile value: {raw!r}") from exc
+    if not 0.0 <= quantile <= 1.0:
+        raise ValueError(f"Quantiles must fall within [0, 1]; received {quantile}")
+    return [quantile]
+
+
+VARIANCE_DISTRIBUTIONS = {"gaussian", "variational"}
+
+
+def _decode_predictions(
+    preds_scaled: np.ndarray,
+    distribution: str,
+    output_dim: int,
+) -> Tuple[np.ndarray, np.ndarray | None]:
+    distribution = distribution.lower()
+    if distribution in VARIANCE_DISTRIBUTIONS:
+        if preds_scaled.shape[-1] != output_dim * 2:
+            raise ValueError(
+                "Expected probabilistic head to emit 2 * output_dim values per timestep"
+            )
+        mean = preds_scaled[:, :output_dim]
+        log_var = preds_scaled[:, output_dim:]
+        return mean, log_var
+    if preds_scaled.shape[-1] != output_dim:
+        raise ValueError(
+            "Deterministic head output dimension mismatch: "
+            f"expected {output_dim}, received {preds_scaled.shape[-1]}"
+        )
+    return preds_scaled, None
+
+
+def _project_from_features(
+    feature_values: Iterable[float],
+    feature_columns: Sequence[str],
+    transform_config: Mapping[str, str],
+    state_prev,
+) -> ProjectionResult | None:
+    feature_iter = list(feature_values)
+    if len(feature_iter) != len(feature_columns):
+        raise ValueError(
+            "Feature value length mismatch: "
+            f"expected {len(feature_columns)}, received {len(feature_iter)}"
+        )
+    pred_map = {
+        feature_columns[j]: float(feature_iter[j])
+        for j in range(len(feature_columns))
+    }
+    pred_series = _features_to_driver_series(pred_map, transform_config)
+    if pred_series.isna().any():
+        return None
+    driver_vector = row_to_driver(pd.Series(pred_series))
+    return project_forward(state_prev, driver_vector)
+
+
+def _extract_net_income(
+    income_statement: Mapping[str, float] | None,
+) -> float | None:
+    if not income_statement:
+        return None
+    value = income_statement.get('net_income')
+    if value is None:
+        return None
+    return float(value)
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv)
     logging.basicConfig(level=getattr(logging, args.log_level.upper(), logging.INFO))
+
+    if args.mc_samples < 0:
+        raise ValueError("--mc-samples must be non-negative")
+    if args.horizon <= 0:
+        raise ValueError("--horizon must be positive")
+    quantiles = _parse_quantiles(args.quantiles)
 
     df = pd.read_parquet(args.drivers)
 
@@ -132,6 +266,13 @@ def main(argv: Sequence[str] | None = None) -> None:
     feature_columns: list[str] = stats.get('feature_columns', [])
     aux_features: list[str] = stats.get('aux_features', [])
     transform_config = stats.get('transform_config', {})
+    distribution = str(stats.get('distribution', 'deterministic')).lower()
+    architecture = str(stats.get('architecture', 'mlp')).lower()
+    sequence_length = int(stats.get('sequence_length', 1))
+    if sequence_length <= 0:
+        sequence_length = 1
+    if architecture not in {'mlp', 'gru'}:
+        raise ValueError(f"Unsupported architecture in scaling stats: {architecture}")
     global BANK_TICKERS
     BANK_TICKERS = set(stats.get('bank_tickers', list(BANK_TICKERS)))
 
@@ -172,109 +313,171 @@ def main(argv: Sequence[str] | None = None) -> None:
         states = extract_states(processed_path)
         income_metrics = extract_income_metric_map(processed_path)
         template = bank_templates.get(ticker.upper())
-        if len(periods) < 2:
+        if len(periods) <= sequence_length:
             continue
 
         features = group[feature_columns].astype(float).to_numpy()
-        sector_vec = _sector_vector(ticker, aux_features)
+        sector_vec = _sector_vector(ticker, aux_features).astype(np.float32)
         if aux_dim and len(sector_vec) != aux_dim:
             raise ValueError(
                 f"Auxiliary feature dimension mismatch: expected {aux_dim}, got {len(sector_vec)}"
             )
 
-        inputs = []
-        for i in range(len(features) - 1):
-            feature_scaled = (features[i] - x_mean) / x_std
-            inputs.append(np.concatenate([feature_scaled, sector_vec]))
-        if not inputs:
-            continue
-        inputs = np.asarray(inputs, dtype=np.float32)
-        preds_scaled = model.predict(inputs, verbose=0)
-        preds = preds_scaled * y_std + y_mean
+        features_scaled = ((features - x_mean) / x_std).astype(np.float32)
 
-        for i in range(len(preds)):
-            prev_period = periods[i]
-            target_period = periods[i + 1]
-            state_prev = states.get(prev_period)
-            state_true = states.get(target_period)
-            metrics_true = income_metrics.get(target_period)
-            if state_prev is None or state_true is None or metrics_true is None:
+        for start_idx in range(sequence_length - 1, len(features) - 1):
+            max_horizon = min(args.horizon, len(features) - start_idx - 1)
+            if max_horizon <= 0:
                 continue
 
-            pred_map = {
-                feature_columns[j]: float(preds[i, j])
-                for j in range(len(feature_columns))
-            }
-            pred_series = _features_to_driver_series(pred_map, transform_config)
-
-            upper = ticker.upper()
-            template_available = template is not None
-            bank_mode = args.bank_mode
-
-            template_result: ProjectionResult | None = None
-            if template_available:
-                template_result = template.project(state_prev)
-
-            mlp_result: ProjectionResult | None = None
-            driver_series = pred_series
-            if driver_series.isna().any():
-                logging.debug('Skipping %s %s due to missing predicted drivers', ticker, target_period)
+            base_state = states.get(periods[start_idx])
+            if base_state is None:
                 continue
-            driver_data = driver_series.to_dict()
-            driver_vector = row_to_driver(pd.Series(driver_data))
-            mlp_result = project_forward(state_prev, driver_vector)
 
-            if upper in BANK_TICKERS:
-                if bank_mode in {'ensemble', 'auto'} and upper in bank_ensemble and template_result is not None and mlp_result is not None:
-                    weights = bank_ensemble[upper]
-                    result = weights.combine(template_result, mlp_result)
-                    pred_state = result.state
-                    identity_gap = result.identity_gap
-                    mode = 'bank_ensemble'
-                elif (
-                    bank_mode == 'template'
-                    or (bank_mode == 'auto' and template_result is not None)
-                ) and template_result is not None:
-                    result = template_result
-                    pred_state = result.state
-                    identity_gap = result.identity_gap
-                    mode = 'bank_template'
-                elif bank_mode in {'persistence', 'auto'} and bank_mode != 'mlp':
+            seq_window = [
+                np.asarray(features_scaled[j], dtype=np.float32)
+                for j in range(start_idx - sequence_length + 1, start_idx + 1)
+            ]
+            current_state = base_state
+
+            for step in range(1, max_horizon + 1):
+                target_idx = start_idx + step
+                target_period = periods[target_idx]
+                state_true = states.get(target_period)
+                metrics_true = income_metrics.get(target_period)
+                if state_true is None or metrics_true is None:
+                    continue
+
+                if architecture == 'gru':
+                    seq_input = np.stack(seq_window, axis=0)[None, :, :]
+                    aux_input = sector_vec[None, :]
+                    preds_scaled_raw = model.predict([seq_input, aux_input], verbose=0)[0]
+                else:
+                    feature_input = seq_window[-1]
+                    model_input = np.concatenate([feature_input, sector_vec])
+                    preds_scaled_raw = model.predict(model_input[None, :], verbose=0)[0]
+
+                preds_mean_scaled, log_var_scaled = _decode_predictions(
+                    preds_scaled_raw[None, :], distribution, len(feature_columns)
+                )
+                preds_mean_scaled = preds_mean_scaled[0]
+                preds = preds_mean_scaled * y_std + y_mean
+
+                mc_preds: np.ndarray | None = None
+                if args.mc_samples:
+                    if distribution in VARIANCE_DISTRIBUTIONS and log_var_scaled is not None:
+                        std_scaled = np.exp(0.5 * np.clip(log_var_scaled[0], -10.0, 10.0))
+                        epsilon = np.random.standard_normal(
+                            size=(args.mc_samples, len(preds_mean_scaled))
+                        )
+                        sample_scaled = preds_mean_scaled[None, :] + epsilon * std_scaled[None, :]
+                        mc_preds = sample_scaled * y_std + y_mean
+                    else:
+                        sample_values = []
+                        for _ in range(args.mc_samples):
+                            if architecture == 'gru':
+                                sample_raw = model(
+                                    [seq_input, aux_input], training=True
+                                ).numpy()[0]
+                            else:
+                                sample_raw = model(
+                                    model_input[None, :], training=True
+                                ).numpy()[0]
+                            sample_values.append(sample_raw)
+                        if sample_values:
+                            sample_scaled = np.stack(sample_values, axis=0)
+                            mc_preds = sample_scaled * y_std + y_mean
+
+                state_prev = current_state
+                template_result: ProjectionResult | None = None
+                if template is not None:
+                    template_result = template.project(state_prev)
+
+                mlp_result = _project_from_features(
+                    preds, feature_columns, transform_config, state_prev
+                )
+                if mlp_result is None:
+                    logging.debug(
+                        'Skipping %s %s due to missing predicted drivers',
+                        ticker,
+                        target_period,
+                    )
+                    continue
+
+                persistence_result: ProjectionResult | None = None
+                upper = ticker.upper()
+                bank_mode = args.bank_mode
+                if (
+                    upper in BANK_TICKERS
+                    and bank_mode in {'persistence', 'auto'}
+                    and bank_mode != 'mlp'
+                ):
                     observed_map = {
-                        feature_columns[j]: float(features[i + 1, j])
+                        feature_columns[j]: float(features[target_idx, j])
                         for j in range(len(feature_columns))
                     }
-                    driver_series_obs = _features_to_driver_series(observed_map, transform_config)
+                    driver_series_obs = _features_to_driver_series(
+                        observed_map, transform_config
+                    )
                     if driver_series_obs.isna().any():
-                        logging.debug('Skipping %s %s due to missing observed drivers', ticker, target_period)
-                        continue
-                    driver_vector_obs = row_to_driver(driver_series_obs)
-                    result = project_forward(state_prev, driver_vector_obs)
-                    pred_state = result.state
-                    identity_gap = result.identity_gap
-                    mode = 'persistence'
+                        logging.debug(
+                            'Skipping %s %s persistence fallback due to missing observed drivers',
+                            ticker,
+                            target_period,
+                        )
+                    else:
+                        driver_vector_obs = row_to_driver(driver_series_obs)
+                        persistence_result = project_forward(state_prev, driver_vector_obs)
+
+                ensemble_weights = bank_ensemble.get(upper)
+                if upper in BANK_TICKERS:
+                    if (
+                        bank_mode in {'ensemble', 'auto'}
+                        and ensemble_weights is not None
+                        and template_result is not None
+                    ):
+                        result = ensemble_weights.combine(template_result, mlp_result)
+                        pred_state = result.state
+                        identity_gap = result.identity_gap
+                        mode = 'bank_ensemble'
+                    elif (
+                        bank_mode == 'template'
+                        or (bank_mode == 'auto' and template_result is not None)
+                    ) and template_result is not None:
+                        result = template_result
+                        pred_state = result.state
+                        identity_gap = result.identity_gap
+                        mode = 'bank_template'
+                    elif (
+                        bank_mode in {'persistence', 'auto'}
+                        and bank_mode != 'mlp'
+                        and persistence_result is not None
+                    ):
+                        result = persistence_result
+                        pred_state = result.state
+                        identity_gap = result.identity_gap
+                        mode = 'persistence'
+                    else:
+                        result = mlp_result
+                        pred_state = result.state
+                        identity_gap = result.identity_gap
+                        mode = 'mlp'
                 else:
                     result = mlp_result
                     pred_state = result.state
                     identity_gap = result.identity_gap
                     mode = 'mlp'
-            else:
-                result = mlp_result
-                pred_state = result.state
-                identity_gap = result.identity_gap
-                mode = 'mlp'
 
-            pred_net_income = float('nan')
-            if result.income_statement:
-                net_income_val = result.income_statement.get('net_income')
-                if net_income_val is not None:
-                    pred_net_income = float(net_income_val)
+                net_income_val = _extract_net_income(result.income_statement)
+                pred_net_income = (
+                    float(net_income_val) if net_income_val is not None else float('nan')
+                )
 
-            records.append(
-                {
+                record: dict[str, object] = {
                     'ticker': ticker,
-                    'prev_period': prev_period,
+                    'prev_period': periods[start_idx + step - 1],
                     'target_period': target_period,
+                    'horizon': step,
                     'pred_total_assets': pred_state.total_assets(),
                     'true_total_assets': state_true.total_assets(),
                     'pred_equity': pred_state.equity,
@@ -283,8 +486,101 @@ def main(argv: Sequence[str] | None = None) -> None:
                     'mode': mode,
                     'pred_net_income': pred_net_income,
                     'true_net_income': metrics_true.net_income,
+                    'distribution': distribution,
                 }
-            )
+
+                if mc_preds is not None:
+                    sample_assets: list[float] = []
+                    sample_equity: list[float] = []
+                    sample_identity: list[float] = []
+                    sample_net_income: list[float] = []
+
+                    if mode in {'bank_template', 'persistence'}:
+                        sample_assets = [pred_state.total_assets()]
+                        sample_equity = [pred_state.equity]
+                        sample_identity = [identity_gap]
+                        if np.isfinite(pred_net_income):
+                            sample_net_income = [float(pred_net_income)]
+                    else:
+                        for sample_idx in range(mc_preds.shape[0]):
+                            sample_result = _project_from_features(
+                                mc_preds[sample_idx],
+                                feature_columns,
+                                transform_config,
+                                state_prev,
+                            )
+                            if sample_result is None:
+                                continue
+                            sample_projection = sample_result
+                            if (
+                                mode == 'bank_ensemble'
+                                and template_result is not None
+                                and ensemble_weights is not None
+                            ):
+                                sample_projection = ensemble_weights.combine(
+                                    template_result, sample_result
+                                )
+
+                            sample_state = sample_projection.state
+                            sample_assets.append(sample_state.total_assets())
+                            sample_equity.append(sample_state.equity)
+                            sample_identity.append(sample_projection.identity_gap)
+                            sample_income_val = _extract_net_income(
+                                sample_projection.income_statement
+                            )
+                            if sample_income_val is not None:
+                                sample_net_income.append(float(sample_income_val))
+
+                    sample_count = len(sample_assets)
+                    record['mc_sample_count'] = int(sample_count)
+                    if distribution in VARIANCE_DISTRIBUTIONS and log_var_scaled is not None:
+                        strategy = 'gaussian_head' if distribution == 'gaussian' else 'variational_head'
+                    else:
+                        strategy = 'dropout'
+                    record['mc_strategy'] = strategy
+
+                    if sample_assets:
+                        assets_array = np.asarray(sample_assets, dtype=float)
+                        record['pred_total_assets_mc_mean'] = float(np.mean(assets_array))
+                        record['pred_total_assets_mc_std'] = float(np.std(assets_array, ddof=0))
+                        for quantile in quantiles:
+                            suffix = f"{int(round(quantile * 100)):02d}"
+                            record[f"pred_total_assets_q{suffix}"] = float(
+                                np.quantile(assets_array, quantile)
+                            )
+                    if sample_equity:
+                        equity_array = np.asarray(sample_equity, dtype=float)
+                        record['pred_equity_mc_mean'] = float(np.mean(equity_array))
+                        record['pred_equity_mc_std'] = float(np.std(equity_array, ddof=0))
+                        for quantile in quantiles:
+                            suffix = f"{int(round(quantile * 100)):02d}"
+                            record[f"pred_equity_q{suffix}"] = float(
+                                np.quantile(equity_array, quantile)
+                            )
+                    if sample_identity:
+                        identity_array = np.asarray(sample_identity, dtype=float)
+                        record['identity_gap_mc_mean'] = float(np.mean(identity_array))
+                        record['identity_gap_mc_std'] = float(np.std(identity_array, ddof=0))
+                        for quantile in quantiles:
+                            suffix = f"{int(round(quantile * 100)):02d}"
+                            record[f"identity_gap_q{suffix}"] = float(
+                                np.quantile(identity_array, quantile)
+                            )
+                    if sample_net_income:
+                        income_array = np.asarray(sample_net_income, dtype=float)
+                        record['pred_net_income_mc_mean'] = float(np.mean(income_array))
+                        record['pred_net_income_mc_std'] = float(np.std(income_array, ddof=0))
+                        for quantile in quantiles:
+                            suffix = f"{int(round(quantile * 100)):02d}"
+                            record[f"pred_net_income_q{suffix}"] = float(
+                                np.quantile(income_array, quantile)
+                            )
+
+                records.append(record)
+                current_state = pred_state
+                seq_window.append(preds_mean_scaled.astype(np.float32))
+                if len(seq_window) > sequence_length:
+                    seq_window.pop(0)
 
     output_df = pd.DataFrame(records)
     if not output_df.empty:

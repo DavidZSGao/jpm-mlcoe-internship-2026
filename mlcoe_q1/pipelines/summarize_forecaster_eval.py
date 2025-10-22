@@ -9,6 +9,8 @@ from typing import Iterable, Sequence
 
 import pandas as pd
 
+from mlcoe_q1.pipelines.summarize_forecaster_evaluation import summarize as _summarize
+
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -54,26 +56,34 @@ def summarize_metrics(df: pd.DataFrame, group_by: Sequence[str]) -> pd.DataFrame
     optional_income = "net_income_mae" in df.columns
     _validate_columns(df, list(group_by) + required)
 
-    aggregations = {
-        "observations": ("assets_mae", "count"),
-        "assets_mae_mean": ("assets_mae", "mean"),
-        "assets_mae_median": ("assets_mae", "median"),
-        "assets_mae_max": ("assets_mae", "max"),
-        "equity_mae_mean": ("equity_mae", "mean"),
-        "equity_mae_median": ("equity_mae", "median"),
-        "equity_mae_max": ("equity_mae", "max"),
-        "identity_gap_mean": ("identity_gap", "mean"),
-    }
+    summary = _summarize(df, list(group_by))
+
+    expected_columns = [
+        "observations",
+        "assets_mae_mean",
+        "assets_mae_median",
+        "assets_mae_max",
+        "equity_mae_mean",
+        "equity_mae_median",
+        "equity_mae_max",
+        "identity_gap_mean",
+    ]
     if optional_income:
-        aggregations.update(
-            {
-                "net_income_mae_mean": ("net_income_mae", "mean"),
-                "net_income_mae_median": ("net_income_mae", "median"),
-                "net_income_mae_max": ("net_income_mae", "max"),
-            }
+        expected_columns.extend(
+            [
+                "net_income_mae_mean",
+                "net_income_mae_median",
+                "net_income_mae_max",
+            ]
         )
 
-    summary = df.groupby(list(group_by)).agg(**aggregations).reset_index()
+    missing_stats = [column for column in expected_columns if column not in summary.columns]
+    if missing_stats:
+        raise KeyError(
+            "Summariser output is missing expected statistics: "
+            + ", ".join(missing_stats)
+        )
+
     return summary.sort_values(list(group_by)).reset_index(drop=True)
 
 

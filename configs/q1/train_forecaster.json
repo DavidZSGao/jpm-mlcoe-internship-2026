@@ -1,0 +1,16 @@
+{
+  "drivers": "data/processed/driver_features.parquet",
+  "output_dir": "models/artifacts/driver_forecaster",
+  "processed_root": "data/processed",
+  "epochs": 200,
+  "batch_size": 32,
+  "learning_rate": 0.001,
+  "architecture": "mlp",
+  "sequence_length": 3,
+  "gru_units": "128,64",
+  "recurrent_dropout": 0.1,
+  "distribution": "deterministic",
+  "kl_weight": 0.001,
+  "calibrate_banks": true,
+  "log_level": "INFO"
+}

@@ -1,0 +1,15 @@
+{
+  "tickers": [
+    "3333.HK",
+    "AAPL",
+    "CAT",
+    "GM",
+    "HON",
+    "MSFT",
+    "UNP"
+  ],
+  "period_start": "2020-12-31T00:00:00",
+  "period_end": "2025-06-30T00:00:00",
+  "rows": 27,
+  "source": "yfinance"
+}

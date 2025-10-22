@@ -10,7 +10,7 @@ Enhancements in this revision:
   describing which page/strategy succeeded (useful when debugging
   layout-specific failures);
 * the CLI can load bespoke configs via ``--config`` while still shipping a
-  reasonable built-in default set for GM, LVMH, and Tencent;
+  reasonable built-in default set for GM, LVMH, Tencent, and Alibaba;
 * the JSON artifact now records provenance (timestamp, pdfplumber version,
   source PDF, company key) alongside ratios.
 
@@ -30,6 +30,67 @@ from typing import Dict, Optional, Sequence, Tuple
 import pdfplumber
 
 COMPANY_CONFIG: Dict[str, Dict] = {
+    'exxon': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': [
+                'Total revenues and other income',
+                'Total revenues',
+                'Revenues',
+            ],
+            'operating_income': [
+                'Income from operations',
+                'Earnings from operations',
+                'Operating income',
+            ],
+            'net_income': [
+                'Net income',
+                'Net income attributable to ExxonMobil',
+                'Net income attributable to Exxon Mobil Corporation',
+            ],
+            'interest_labels': [
+                'Debt-related interest',
+                'Interest expense',
+                'Interest and debt expense',
+            ],
+            'expense_mode': 'label',
+            'expenses_label': [
+                'Total costs and other deductions',
+                'Total costs and expenses',
+            ],
+            'table_markers': [
+                'Consolidated statement of income',
+                'Consolidated statement of earnings',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total ExxonMobil shareholders’ equity',
+                "Total ExxonMobil shareholders' equity",
+                'Total equity',
+            ],
+            'short_term_debt': [
+                'Notes and loans payable',
+                'Short-term borrowings',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': ['Long-term debt'],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheet',
+                'Consolidated statement of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
     'gm': {
         'scale': 1_000_000.0,
         'income': {
@@ -58,6 +119,128 @@ COMPANY_CONFIG: Dict[str, Dict] = {
             {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'}
         ],
     },
+    'jpm': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Total net revenue', 'Net revenue'],
+            'operating_income': [
+                'Income before income tax expense',
+                'Income before income tax expense/(benefit)',
+            ],
+            'net_income': [
+                'Net income',
+                'Net income/(loss)',
+                'Net income attributable to JPMorgan Chase & Co.',
+            ],
+            'interest_labels': [
+                'Interest expense',
+                'Interest expense on deposits',
+                'Interest expense on long-term debt',
+            ],
+            'expense_mode': 'label',
+            'expenses_label': [
+                'Total noninterest expense',
+                'Total noninterest expenses',
+            ],
+            'table_markers': [
+                'Consolidated statements of income',
+                'Consolidated statements of earnings',
+            ],
+        },
+        'balance': {
+            'current_assets': None,
+            'inventory': None,
+            'total_assets': ['Total assets'],
+            'current_liabilities': None,
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total stockholders’ equity',
+                "Total stockholders' equity",
+                'Total JPMorgan Chase & Co. stockholders’ equity',
+                "Total JPMorgan Chase & Co. stockholders' equity",
+            ],
+            'short_term_debt': [
+                'Short-term borrowings',
+                'Federal funds purchased',
+                'Securities loaned or sold under repurchase agreements',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': ['Long-term debt'],
+            'long_term_rows': None,
+            'table_markers': ['Consolidated balance sheets'],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'hsbc': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': [
+                'Net operating income',
+                'Total operating income',
+                'Reported revenue',
+            ],
+            'operating_income': [
+                'Profit before tax',
+                'Profit before income tax expense',
+                'Profit before income tax',
+            ],
+            'net_income': [
+                'Profit attributable to ordinary shareholders',
+                'Profit attributable to shareholders of the parent company',
+                'Profit for the year',
+            ],
+            'interest_labels': [
+                'Net interest income',
+                'Interest expense',
+                'Interest expense on financial liabilities',
+            ],
+            'expense_mode': 'label',
+            'expenses_label': [
+                'Total operating expenses',
+                'Operating expenses',
+                'Total operating expense',
+            ],
+            'table_markers': [
+                'Consolidated income statement',
+                'Consolidated statement of profit or loss',
+            ],
+        },
+        'balance': {
+            'current_assets': None,
+            'inventory': None,
+            'total_assets': ['Total assets'],
+            'current_liabilities': None,
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total shareholders’ equity',
+                "Total shareholders' equity",
+                'Total equity attributable to shareholders of the parent',
+            ],
+            'short_term_debt': [
+                'Trading liabilities',
+                'Deposits by banks',
+                'Deposits by customers',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': [
+                'Subordinated liabilities',
+                'Debt securities in issue',
+                'Long-term debt',
+            ],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheet',
+                'Consolidated statement of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
     'lvmh': {
         'scale': 1_000_000.0,
         'income': {
@@ -84,6 +267,227 @@ COMPANY_CONFIG: Dict[str, Dict] = {
         },
         'table_strategies': [
             {'vertical_strategy': 'text', 'horizontal_strategy': 'text'}
+        ],
+    },
+    'santander': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': [
+                'Total income',
+                'Gross income',
+                'Net operating income',
+            ],
+            'operating_income': [
+                'Profit before tax',
+                'Profit before income tax',
+                'Profit before income tax expense',
+            ],
+            'net_income': [
+                'Net profit',
+                'Net profit attributable to the Group',
+                'Profit attributable to owners of the parent',
+            ],
+            'interest_labels': [
+                'Net interest income',
+                'Interest expense',
+                'Interest on financial liabilities',
+            ],
+            'expense_mode': 'label',
+            'expenses_label': [
+                'Total operating expenses',
+                'Operating expenses',
+                'Administrative expenses',
+            ],
+            'table_markers': [
+                'Consolidated income statement',
+                'Consolidated statement of profit or loss',
+            ],
+        },
+        'balance': {
+            'current_assets': None,
+            'inventory': None,
+            'total_assets': ['Total assets'],
+            'current_liabilities': None,
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total equity',
+                'Total shareholders’ equity',
+                "Total shareholders' equity",
+            ],
+            'short_term_debt': [
+                'Deposits from customers',
+                'Deposits from credit institutions',
+                'Short-term borrowings',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': [
+                'Debt instruments in issue',
+                'Senior debt securities',
+                'Subordinated liabilities',
+            ],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheet',
+                'Consolidated statement of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'microsoft': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Revenue', 'Total revenue'],
+            'operating_income': ['Operating income', 'Operating income (loss)'],
+            'net_income': ['Net income'],
+            'interest_labels': ['Interest expense', 'Interest and other, net'],
+            'expense_mode': 'label',
+            'expenses_label': ['Total costs and expenses', 'Total operating expenses'],
+            'table_markers': ['Consolidated statements of income'],
+        },
+        'balance': {
+            'current_assets': ['Total current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total stockholders’ equity',
+                "Total stockholders' equity",
+            ],
+            'short_term_debt': ['Short-term debt'],
+            'short_term_rows': None,
+            'long_term_debt': ['Long-term debt'],
+            'long_term_rows': None,
+            'table_markers': ['Consolidated balance sheets'],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'mercedes': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': [
+                'Revenue',
+                'Total revenue',
+                'Revenue and other operating income',
+            ],
+            'operating_income': [
+                'Group EBIT',
+                'Earnings before interest and taxes (EBIT)',
+                'Operating profit',
+            ],
+            'net_income': [
+                'Net profit',
+                'Profit after taxes',
+                'Net profit attributable to shareholders of Mercedes-Benz Group',
+            ],
+            'interest_labels': [
+                'Interest expense',
+                'Finance costs',
+            ],
+            'expense_mode': 'label',
+            'expenses_label': [
+                'Cost of sales',
+                'Total expenses',
+                'Total cost of sales',
+            ],
+            'table_markers': [
+                'Consolidated statement of income',
+                'Consolidated income statement',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total equity',
+                'Equity attributable to shareholders of Mercedes-Benz Group',
+            ],
+            'short_term_debt': [
+                'Current financial liabilities',
+                'Short-term financial liabilities',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': [
+                'Non-current financial liabilities',
+                'Long-term financial liabilities',
+            ],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated statement of financial position',
+                'Consolidated balance sheet',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'nestle': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Sales', 'Total sales', 'Total revenue'],
+            'operating_income': [
+                'Trading operating profit',
+                'Operating profit',
+                'Operating income',
+            ],
+            'net_income': [
+                'Net profit',
+                'Net profit for the year',
+                'Net profit attributable to shareholders of the parent',
+            ],
+            'interest_labels': [
+                'Net financial income/(expense)',
+                'Financial income/(expense)',
+                'Finance costs',
+            ],
+            'expense_mode': 'revenue_minus_profit',
+            'profit_label': [
+                'Trading operating profit',
+                'Operating profit',
+            ],
+            'table_markers': [
+                'Consolidated income statement',
+                'Consolidated statement of income',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Equity attributable to shareholders of the parent',
+                'Total equity',
+            ],
+            'short_term_debt': [
+                'Short-term financial debt',
+                'Current financial debt',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': [
+                'Long-term financial debt',
+                'Non-current financial debt',
+            ],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated statement of financial position',
+                'Consolidated balance sheet',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
         ],
     },
     'tencent': {
@@ -133,6 +537,313 @@ COMPANY_CONFIG: Dict[str, Dict] = {
             'table_markers': [
                 'Consolidated balance sheet',
                 'Consolidated statement of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'alibaba': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Total revenue', 'Revenue'],
+            'operating_income': [
+                'Income from operations',
+                'Income from operations/(loss)',
+                'Operating income',
+            ],
+            'net_income': [
+                'Net income',
+                'Net income attributable to ordinary shareholders of Alibaba Group',
+                'Profit for the year attributable to ordinary shareholders of the company',
+            ],
+            'interest_labels': [
+                'Interest expense',
+                'Interest and investment income/(loss)',
+                'Interest income',
+            ],
+            'expense_mode': 'revenue_minus_profit',
+            'profit_label': [
+                'Income from operations',
+                'Income from operations/(loss)',
+                'Operating income',
+            ],
+            'table_markers': [
+                'Consolidated statements of income',
+                'Consolidated statements of operations',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets', 'Current assets'],
+            'inventory': ['Inventories', 'Inventory'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities', 'Current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total equity attributable to shareholders of the company',
+                'Total shareholders’ equity',
+                'Total shareholders\' equity',
+            ],
+            'short_term_debt': [
+                'Short-term borrowings',
+                'Current borrowings',
+                'Current bank borrowings',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': [
+                'Long-term borrowings',
+                'Non-current bank borrowings',
+                'Non-current borrowings',
+            ],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheets',
+                'Consolidated statements of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'sap': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Total revenue', 'Revenue', 'Cloud revenue'],
+            'operating_income': [
+                'Operating profit',
+                'Operating income',
+                'Profit from operations (EBIT)',
+            ],
+            'net_income': [
+                'Profit after tax',
+                'Net income',
+                'Profit attributable to owners of parent',
+            ],
+            'interest_labels': [
+                'Finance costs',
+                'Interest expense',
+            ],
+            'expense_mode': 'label',
+            'expenses_label': [
+                'Total operating expenses',
+                'Operating expenses',
+            ],
+            'table_markers': [
+                'Consolidated income statements',
+                'Consolidated statement of income',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total equity',
+                'Equity attributable to owners of parent',
+            ],
+            'short_term_debt': [
+                'Current financial liabilities',
+                'Short-term debt',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': ['Non-current financial liabilities', 'Long-term debt'],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated statements of financial position',
+                'Consolidated balance sheets',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'toyota': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Net sales', 'Sales revenue', 'Revenue'],
+            'operating_income': [
+                'Operating income',
+                'Operating profit',
+                'Operating income/(loss)',
+            ],
+            'net_income': [
+                'Net income',
+                'Net income attributable to owners of the parent',
+                'Profit attributable to owners of the parent',
+            ],
+            'interest_labels': [
+                'Interest expense',
+                'Interest expenses',
+                'Finance costs',
+            ],
+            'expense_mode': 'revenue_minus_profit',
+            'profit_label': [
+                'Operating income',
+                'Operating profit',
+            ],
+            'table_markers': [
+                'Consolidated statement of income',
+                'Consolidated statements of income',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total equity',
+                'Total Toyota Motor Corporation shareholders’ equity',
+                "Total Toyota Motor Corporation shareholders' equity",
+            ],
+            'short_term_debt': [
+                'Short-term borrowings',
+                'Short-term debt',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': [
+                'Long-term debt',
+                'Long-term borrowings',
+            ],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheet',
+                'Consolidated statements of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'vw': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Sales revenue', 'Revenue'],
+            'operating_income': ['Operating result', 'Operating profit'],
+            'net_income': [
+                'Profit after tax',
+                'Profit attributable to shareholders of Volkswagen AG',
+            ],
+            'interest_labels': ['Finance costs', 'Interest expense'],
+            'expense_mode': 'revenue_minus_profit',
+            'profit_label': ['Operating result', 'Operating profit'],
+            'table_markers': [
+                'Consolidated income statement',
+                'Consolidated statement of profit or loss',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Equity attributable to shareholders of Volkswagen AG',
+                'Total equity',
+            ],
+            'short_term_debt': [
+                'Short-term borrowings',
+                'Liabilities to banks (current)',
+            ],
+            'short_term_rows': None,
+            'long_term_debt': [
+                'Non-current financial liabilities',
+                'Long-term borrowings',
+            ],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheet',
+                'Consolidated statement of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'alphabet': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Total revenues', 'Revenue'],
+            'operating_income': ['Income from operations', 'Operating income'],
+            'net_income': [
+                'Net income',
+                'Net income attributable to Alphabet Inc.',
+            ],
+            'interest_labels': ['Interest expense', 'Other income (expense), net'],
+            'expense_mode': 'revenue_minus_profit',
+            'profit_label': ['Operating income', 'Income from operations'],
+            'table_markers': [
+                'Consolidated statements of income',
+                'Consolidated statements of operations',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total stockholders’ equity',
+                "Total stockholders' equity",
+            ],
+            'short_term_debt': ['Current portion of long-term debt', 'Short-term debt'],
+            'short_term_rows': None,
+            'long_term_debt': ['Long-term debt', 'Non-current debt'],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheets',
+                'Consolidated statements of financial position',
+            ],
+        },
+        'table_strategies': [
+            {'vertical_strategy': 'lines', 'horizontal_strategy': 'lines'},
+            {'vertical_strategy': 'text', 'horizontal_strategy': 'text'},
+        ],
+    },
+    'google': {
+        'scale': 1_000_000.0,
+        'income': {
+            'revenue': ['Total revenues', 'Revenue'],
+            'operating_income': ['Income from operations', 'Operating income'],
+            'net_income': [
+                'Net income',
+                'Net income attributable to Alphabet Inc.',
+            ],
+            'interest_labels': ['Interest expense', 'Other income (expense), net'],
+            'expense_mode': 'revenue_minus_profit',
+            'profit_label': ['Operating income', 'Income from operations'],
+            'table_markers': [
+                'Consolidated statements of income',
+                'Consolidated statements of operations',
+            ],
+        },
+        'balance': {
+            'current_assets': ['Total current assets'],
+            'inventory': ['Inventories'],
+            'total_assets': ['Total assets'],
+            'current_liabilities': ['Total current liabilities'],
+            'total_liabilities': ['Total liabilities'],
+            'equity': [
+                'Total stockholders’ equity',
+                "Total stockholders' equity",
+            ],
+            'short_term_debt': ['Current portion of long-term debt', 'Short-term debt'],
+            'short_term_rows': None,
+            'long_term_debt': ['Long-term debt', 'Non-current debt'],
+            'long_term_rows': None,
+            'table_markers': [
+                'Consolidated balance sheets',
+                'Consolidated statements of financial position',
             ],
         },
         'table_strategies': [
@@ -208,6 +919,14 @@ def set_if_missing(store: Dict[str, float], key: str, value: Optional[float]) ->
     if value is None:
         return
     store.setdefault(key, value)
+
+
+def _safe_division(numerator: Optional[float], denominator: Optional[float]) -> Optional[float]:
+    if numerator is None or denominator is None:
+        return None
+    if denominator == 0:
+        return None
+    return numerator / denominator
 
 
 def extract_income_statement(pdf: pdfplumber.PDF, cfg: Dict) -> Tuple[Dict[str, float], Metadata]:
@@ -409,15 +1128,38 @@ def compute_ratios(pdf_path: Path, company: str) -> Dict[str, object]:
     if 'total_liabilities' not in balance:
         balance['total_liabilities'] = balance['total_assets'] - balance['equity']
 
+    current_assets = balance.get('current_assets')
+    current_liabilities = balance.get('current_liabilities')
+    quick_ratio: Optional[float] = None
+    if current_assets is not None and current_liabilities not in (None, 0):
+        quick_ratio = (current_assets - balance.get('inventory', 0.0)) / current_liabilities
+
+    equity = balance.get('equity')
+    total_assets = balance.get('total_assets')
+    operating_income = income.get('operating_income')
+    interest_expense = income.get('interest_expense')
+    total_expenses = income.get('total_expenses')
+    revenue = income.get('revenue')
+
+    debt_to_capital_denominator = total_debt + (equity or 0.0)
+    if debt_to_capital_denominator == 0:
+        debt_to_capital = None
+    else:
+        debt_to_capital = total_debt / debt_to_capital_denominator
+
+    interest_coverage = None
+    if interest_expense is not None and interest_expense != 0:
+        interest_coverage = _safe_division(operating_income, abs(interest_expense))
+
     ratios = {
-        'net_income': income['net_income'],
-        'cost_to_income_ratio': income['total_expenses'] / income['revenue'],
-        'quick_ratio': (balance['current_assets'] - balance.get('inventory', 0.0)) / balance['current_liabilities'],
-        'debt_to_equity': total_debt / balance['equity'],
-        'debt_to_assets': total_debt / balance['total_assets'],
-        'debt_to_capital': total_debt / (total_debt + balance['equity']),
-        'interest_coverage': income['operating_income'] / (income['interest_expense'] if income['interest_expense'] else 1.0),
-        'debt_to_ebit': total_debt / income['operating_income'],
+        'net_income': income.get('net_income'),
+        'cost_to_income_ratio': _safe_division(total_expenses, revenue),
+        'quick_ratio': quick_ratio,
+        'debt_to_equity': _safe_division(total_debt, equity),
+        'debt_to_assets': _safe_division(total_debt, total_assets),
+        'debt_to_capital': debt_to_capital,
+        'interest_coverage': interest_coverage,
+        'debt_to_ebit': _safe_division(total_debt, operating_income),
     }
     return {
         'ratios': ratios,

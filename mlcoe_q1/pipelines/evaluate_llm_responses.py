@@ -178,6 +178,9 @@ def evaluate_responses(
 
     evaluations: list[dict[str, object]] = []
 
+    has_seed = "seed" in responses.columns
+    has_adapter = "adapter" in responses.columns
+
     for row in merged.itertuples(index=False):
         ground_truth = _parse_json(getattr(row, "ground_truth"))
         response_payload = _parse_json(getattr(row, response_column))
@@ -207,6 +210,10 @@ def evaluate_responses(
         )
         if model_column is not None:
             record[model_column] = getattr(row, model_column)
+        if has_seed:
+            record["seed"] = getattr(row, "seed", None)
+        if has_adapter:
+            record["adapter"] = getattr(row, "adapter", None)
         evaluations.append(record)
 
     return pd.DataFrame.from_records(evaluations)

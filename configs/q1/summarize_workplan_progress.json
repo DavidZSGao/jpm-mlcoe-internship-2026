@@ -1,0 +1,5 @@
+{
+  "workplan": "reports/q1/q1_workplan.md",
+  "output": "reports/q1/status/workplan_progress.md",
+  "json_output": "reports/q1/status/workplan_progress.json"
+}

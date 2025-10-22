@@ -9,6 +9,7 @@ from typing import Sequence
 
 import pandas as pd
 
+from mlcoe_q1.utils.config import add_config_argument, parse_args_with_config
 from mlcoe_q1.utils.driver_features import (
     BASE_FEATURES,
     OPTIONAL_FEATURES,
@@ -57,7 +58,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="INFO",
         help="Logging verbosity",
     )
-    return parser.parse_args(argv)
+    add_config_argument(parser)
+    return parse_args_with_config(
+        parser,
+        argv,
+        type_overrides={"tickers": [], "lag_features": []},
+    )
 
 
 def main(argv: Sequence[str] | None = None) -> None:

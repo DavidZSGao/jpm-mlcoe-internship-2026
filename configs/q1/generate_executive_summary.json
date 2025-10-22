@@ -1,0 +1,11 @@
+{
+  "forecaster_summary": "reports/q1/artifacts/forecaster_evaluation_summary.parquet",
+  "scenario_summary": "reports/q1/artifacts/scenario_reasonableness.parquet",
+  "calibration_report": "reports/q1/artifacts/forecaster_calibration.parquet",
+  "macro_scenarios": "reports/q1/artifacts/macro_conditioned_scenarios.parquet",
+  "llm_seed_summary": "reports/q1/artifacts/llm_benchmarks/summary_by_model.parquet",
+  "loan_pricing_summary": "reports/q1/artifacts/loan_pricing_summary.json",
+  "credit_metadata": "data/credit_ratings/altman_features.json",
+  "risk_summary": "reports/q1/artifacts/risk_warnings_summary.json",
+  "output": "reports/q1/status/executive_summary.md"
+}

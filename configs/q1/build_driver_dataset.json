@@ -1,0 +1,12 @@
+{
+  "data_root": "data/processed",
+  "output": "data/processed/driver_features.parquet",
+  "lags": 2,
+  "lag_features": [
+    "sales",
+    "sales_growth",
+    "ebit_margin"
+  ],
+  "keep_missing_lags": false,
+  "log_level": "INFO"
+}

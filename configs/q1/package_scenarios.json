@@ -1,0 +1,5 @@
+{
+  "evaluation": "reports/q1/artifacts/forecaster_evaluation.parquet",
+  "output": "reports/q1/artifacts/forecaster_scenarios.parquet",
+  "scenarios": "baseline:0.5,downside:0.1,upside:0.9"
+}

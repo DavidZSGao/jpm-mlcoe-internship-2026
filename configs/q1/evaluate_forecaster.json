@@ -1,0 +1,11 @@
+{
+  "drivers": "data/processed/driver_features.parquet",
+  "model_dir": "models/artifacts/driver_forecaster",
+  "processed_root": "data/processed",
+  "output": "reports/q1/artifacts/forecaster_evaluation.parquet",
+  "bank_mode": "auto",
+  "mc_samples": 128,
+  "quantiles": "0.1,0.5,0.9",
+  "horizon": 2,
+  "log_level": "INFO"
+}

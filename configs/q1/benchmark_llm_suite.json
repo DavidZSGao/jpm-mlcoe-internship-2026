@@ -1,0 +1,12 @@
+{
+  "prompts": "reports/q1/artifacts/llm_prompts.parquet",
+  "output_root": "reports/q1/artifacts/llm_benchmarks",
+  "adapter": "flan-t5",
+  "models": "t5-small",
+  "seeds": "1,2,3",
+  "summary_output": "reports/q1/artifacts/llm_benchmarks/summary.parquet",
+  "seed_summary_output": "reports/q1/artifacts/llm_benchmarks/summary_by_model.parquet",
+  "temperature": 0.0,
+  "max_new_tokens": 256,
+  "limit": 0
+}

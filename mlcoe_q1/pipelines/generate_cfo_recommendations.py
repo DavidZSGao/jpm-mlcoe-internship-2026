@@ -9,9 +9,12 @@ from typing import Sequence
 
 import pandas as pd
 
+from mlcoe_q1.utils.config import add_config_argument, parse_args_with_config
+
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    add_config_argument(parser)
     parser.add_argument(
         "--forecaster-eval",
         type=Path,
@@ -26,7 +29,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True, help="Markdown destination")
     parser.add_argument("--log-level", default="INFO")
     parser.add_argument("--top", type=int, default=3, help="Number of tickers to highlight")
-    return parser.parse_args(argv)
+    return parse_args_with_config(
+        parser,
+        argv,
+        type_overrides={
+            "forecaster_eval": Path,
+            "llm_eval": Path,
+            "output": Path,
+        },
+    )
 
 
 def _format_markdown_table(df: pd.DataFrame) -> str:

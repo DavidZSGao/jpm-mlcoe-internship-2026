@@ -47,5 +47,5 @@ tion engine. The prompt frames the model as `y(t+1) = f(x(t), y(t)) + n(t)`; the
 - Fit regression layers mapping macro features to driver perturbations; expose them through the simulation CLI.
 - Wrap the deterministic projector in a TensorFlow Probability `JointDistributionSequential` so sampling logic co-exists with the
   core accounting identities.
-- Emit scenario summaries alongside existing evaluation artifacts to support CFO reporting and credit risk analytics.
+- Emit scenario summaries alongside existing evaluation artifacts to support CFO reporting and credit risk analytics. _Status:_ `mlcoe_q1.pipelines.package_scenarios` reshapes Monte Carlo quantiles into baseline/downside/upside tables, `mlcoe_q1.pipelines.simulate_macro_conditions` layers macro factor shocks (consensus, mild downturn, rate shock by default) onto those projections with adjustment provenance, `mlcoe_q1.pipelines.analyze_forecaster_calibration` quantifies coverage bias for each group, and `mlcoe_q1.pipelines.compile_lending_package` bundles the resulting scenarios, macro overlays, and briefings into a deliverable set for Strategic Lending reviewers.
 

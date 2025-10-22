@@ -1,0 +1,12 @@
+{
+  "macro_policy_rate": {
+    "baseline": "risk_free_rate",
+    "multiplier": 0.75,
+    "note": "Policy rate delta {delta:.3f} contributes {adjustment:+.3f} to the spread"
+  },
+  "macro_unemployment_rate": {
+    "baseline": 0.04,
+    "multiplier": 1.2,
+    "note": "Unemployment gap {delta:.3f} adds {adjustment:+.3f} to lending rates"
+  }
+}

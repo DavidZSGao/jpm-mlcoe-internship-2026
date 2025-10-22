@@ -17,7 +17,7 @@ A TensorFlow-based system for forecasting corporate balance sheets using:
 - Accounting identity constraints
 - MLP-based time-series prediction
 
-**Status:** Part 1 and the core Part 2 deliverables are complete—bank ensembles drive BAC/JPM/C equity MAE below $0.01$B, the ML extension/simulation roadmaps are documented, and the LLM adapter/evaluator/CFO reporting stack (with truncation-aware HuggingFace integration) is online. Remaining backlog covers PDF regression tests, broader LLM sweeps, and bonus tracks (see `reports/q1/q1_workplan.md`).
+**Status:** Part 1 and Part 2 are now fully delivered. The Strategic Lending workflow covers deterministic projections, probabilistic TensorFlow forecasters (MLP/GRU/variational/Gaussian heads), Monte Carlo scenario packaging, macro overlays, Altman credit scoring, loan pricing, LLM benchmarking (HF + hosted APIs, multi-seed variance), risk-warning extraction, governance audits, and the end-to-end `publish_lending_submission` hand-off. Roadmap notes in `reports/q1/q1_workplan.md` now focus on operational governance follow-ups rather than missing functionality; analysts looking for a step-by-step operational guide can start with `reports/q1/strategic_lending_playbook.md`.
 
 ### Question 2: State-Space Models & Particle Filters
 Implementation and benchmarking of sequential Monte Carlo methods including:
@@ -77,16 +77,22 @@ python -m mlcoe_q1.pipelines.prepare_processed_data
 # Build driver features with two trailing-period lags for sales dynamics
 python -m mlcoe_q1.pipelines.build_driver_dataset --lags 2 --lag-features sales sales_growth \
     --data-root mlcoe_q1/data/processed --output mlcoe_q1/data/processed/driver_features.parquet
+# ...or reuse the repository preset
+python -m mlcoe_q1.pipelines.build_driver_dataset --config configs/q1/build_driver_dataset.json
 
 # Train forecasting model and calibrate bank ensembles
 python -m mlcoe_q1.pipelines.train_forecaster --processed-root mlcoe_q1/data/processed \
     --drivers mlcoe_q1/data/processed/driver_features.parquet --calibrate-banks
+# ...or reuse the repository preset
+python -m mlcoe_q1.pipelines.train_forecaster --config configs/q1/train_forecaster.json
 
 # Evaluate forecasts (auto-selects the calibrated bank ensemble when available)
 python -m mlcoe_q1.pipelines.evaluate_forecaster --processed-root mlcoe_q1/data/processed \
     --drivers mlcoe_q1/data/processed/driver_features.parquet \
     --model-dir mlcoe_q1/models/artifacts/driver_forecaster \
     --output reports/q1/artifacts/forecaster_eval.parquet
+# ...or reuse the repository preset
+python -m mlcoe_q1.pipelines.evaluate_forecaster --config configs/q1/evaluate_forecaster.json
 
 # Calibrate bank ensemble weights independently
 python -m mlcoe_q1.pipelines.calibrate_bank_ensemble \
@@ -120,6 +126,42 @@ python -m mlcoe_q1.pipelines.run_llm_adapter \
     --adapter flan-t5 --model t5-small \
     --output reports/q1/artifacts/llm_responses_t5.parquet
 
+# (Re)use JSON/YAML presets when calling the adapter or benchmark suite
+python -m mlcoe_q1.pipelines.run_llm_adapter \
+    --config configs/q1/run_llm_adapter.json
+python -m mlcoe_q1.pipelines.benchmark_llm_suite \
+    --config configs/q1/benchmark_llm_suite.json
+
+# Reuse presets for scenario/macro/reporting workflows
+python -m mlcoe_q1.pipelines.package_scenarios \
+    --config configs/q1/package_scenarios.json
+python -m mlcoe_q1.pipelines.assess_scenario_reasonableness \
+    --config configs/q1/assess_scenario_reasonableness.json
+python -m mlcoe_q1.pipelines.simulate_macro_conditions \
+    --config configs/q1/simulate_macro_conditions.json
+python -m mlcoe_q1.pipelines.analyze_forecaster_calibration \
+    --config configs/q1/analyze_forecaster_calibration.json
+python -m mlcoe_q1.pipelines.generate_lending_briefing \
+    --config configs/q1/generate_lending_briefing.json
+python -m mlcoe_q1.pipelines.generate_executive_summary \
+    --config configs/q1/generate_executive_summary.json
+python -m mlcoe_q1.pipelines.compile_lending_package \
+    --config configs/q1/compile_lending_package.json
+python -m mlcoe_q1.pipelines.price_loans \
+    --config configs/q1/price_loans.json
+python -m mlcoe_q1.pipelines.generate_cfo_recommendations \
+    --config configs/q1/generate_cfo_recommendations.json
+
+# Generate a markdown + JSON progress digest of the Question 1 workplan
+python -m mlcoe_q1.pipelines.summarize_workplan_progress \
+    --config configs/q1/summarize_workplan_progress.json
+
+# Turn the benchmark manifest into ranked tables and a Markdown briefing
+python -m mlcoe_q1.pipelines.summarize_llm_benchmarks \
+    --manifest reports/q1/artifacts/llm_runs/manifest.json \
+    --output reports/q1/artifacts/llm_runs/benchmark_ranked.parquet \
+    --markdown-output reports/q1/status/llm_benchmark_summary.md
+
 # (The first run will download model weights via HuggingFace; expect ~200 MB and CPU inference.)
 
 # Benchmark LLM responses against ground truth targets
@@ -139,6 +181,30 @@ python -m mlcoe_q1.pipelines.generate_cfo_recommendations \
     --forecaster-eval reports/q1/artifacts/forecaster_eval.parquet \
     --llm-eval reports/q1/artifacts/llm_metrics_t5.parquet \
     --output reports/q1/status/cfo_recommendations.md
+
+# Run the full Strategic Lending refresh (summaries → scenarios → macro overlays → briefings → packaging)
+python -m mlcoe_q1.pipelines.orchestrate_lending_workflow \
+    --evaluation reports/q1/artifacts/forecaster_eval.parquet \
+    --summary-output reports/q1/status/forecaster_summary.parquet \
+    --scenario-output reports/q1/artifacts/forecaster_scenarios.parquet \
+    --macro-output reports/q1/artifacts/macro_conditioned_scenarios.parquet \
+    --briefing-output reports/q1/status/strategic_lending_briefing.md
+
+# The orchestrator and publisher both accept --config for reusable JSON/YAML defaults
+python -m mlcoe_q1.pipelines.orchestrate_lending_workflow \
+    --config configs/q1/orchestrate_lending_workflow.json
+
+# Publish a governance-ready package (orchestrator + executive summary + audit + optional zip)
+python -m mlcoe_q1.pipelines.publish_lending_submission \
+    --evaluation reports/q1/artifacts/forecaster_eval.parquet \
+    --prompt-dataset reports/q1/artifacts/llm_prompts.parquet \
+    --responses-root reports/q1/artifacts/llm_runs \
+    --deliverable-root reports/q1/deliverables/strategic_lending \
+    --zip-output reports/q1/deliverables/strategic_lending.zip
+
+# Example using the publishing config (includes audit expectations and bundle paths)
+python -m mlcoe_q1.pipelines.publish_lending_submission \
+    --config configs/q1/publish_lending_submission.json
 ```
 
 ### Question 2

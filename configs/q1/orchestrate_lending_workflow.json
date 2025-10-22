@@ -1,0 +1,15 @@
+{
+  "summary_group_by": "ticker,mode",
+  "scenario_spec": "baseline:0.5,stress:0.1,optimistic:0.9",
+  "reasonableness_group_by": "scenario",
+  "macro_config": "reports/q1/artifacts/macro_scenarios_example.json",
+  "calibration_group_by": "ticker,mode",
+  "calibration_metrics": "assets,equity,net_income",
+  "coverage_target": 0.9,
+  "identity_threshold": 500000000.0,
+  "copy_artifacts": true,
+  "artifact": [
+    "executive_summary=reports/q1/status/executive_summary.md"
+  ],
+  "log_level": "INFO"
+}

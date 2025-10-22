@@ -10,7 +10,7 @@ from typing import Sequence
 
 import pandas as pd
 
-from mlcoe_q1.pipelines.summarize_forecaster_eval import summarize_metrics
+from mlcoe_q1.pipelines.summarize_forecaster_evaluation import summarize as summarize_metrics
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:

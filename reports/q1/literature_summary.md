@@ -84,5 +84,6 @@ connecting the accounting-identity approach to ML and simulation tooling.
    working-capital and financing policies.
 2. Expand the processed-data describer to emit scenario metadata required for Samonas-style
    audit trails.
-3. Begin drafting the literature bridge for Part 2 (Kim et al., 2024) focusing on LLM
-   benchmarking setup and evaluation design.
+3. Begin drafting the literature bridge for Part 2 drawing on the newer LLM
+   benchmarking references (Alonso, 2024; Farr, 2025; Zhang, 2025) to anchor the
+   evaluation design and reproducibility checklists.

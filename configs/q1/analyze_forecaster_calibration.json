@@ -1,0 +1,6 @@
+{
+  "evaluation": "reports/q1/artifacts/forecaster_evaluation.parquet",
+  "output": "reports/q1/artifacts/forecaster_calibration.parquet",
+  "group_by": "ticker,mode",
+  "metrics": "assets,equity,net_income,identity"
+}

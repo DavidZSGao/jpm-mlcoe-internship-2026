@@ -1,0 +1,6 @@
+{
+  "manifest": "reports/q1/artifacts/llm_runs/manifest.json",
+  "output": "reports/q1/artifacts/llm_runs/benchmark_ranked.parquet",
+  "markdown_output": "reports/q1/status/llm_benchmark_summary.md",
+  "top_n": 5
+}

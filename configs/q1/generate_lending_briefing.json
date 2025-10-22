@@ -1,0 +1,9 @@
+{
+  "summary": "reports/q1/artifacts/forecaster_evaluation_summary.parquet",
+  "evaluation": "reports/q1/artifacts/forecaster_evaluation.parquet",
+  "group_by": "ticker,mode",
+  "coverage_target": 0.9,
+  "identity_threshold": 500000000.0,
+  "llm_seed_summary": "reports/q1/artifacts/llm_benchmarks/summary_by_model.parquet",
+  "output": "reports/q1/status/strategic_lending_briefing.md"
+}

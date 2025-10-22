@@ -1,0 +1,6 @@
+{
+  "forecaster_eval": "reports/q1/artifacts/forecaster_evaluation.parquet",
+  "llm_eval": "reports/q1/artifacts/llm_metrics_t5.parquet",
+  "output": "reports/q1/status/cfo_recommendations.md",
+  "top": 3
+}
