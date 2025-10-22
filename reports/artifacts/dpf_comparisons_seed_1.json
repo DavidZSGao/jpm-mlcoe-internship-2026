@@ -1,0 +1,23 @@
+{
+  "seed": 1,
+  "dpf_results": {
+    "DPF_Soft": {
+      "runtime_s": 65.99277045601048,
+      "peak_memory_kb": 33585.9228515625,
+      "log_likelihood": -87.42243194580078,
+      "ess_mean": 117.98611450195312
+    },
+    "DPF_OT_Low": {
+      "runtime_s": 67.46062336897012,
+      "peak_memory_kb": 33533.9765625,
+      "log_likelihood": -99.14681243896484,
+      "ess_mean": 166.8766632080078
+    },
+    "DPF_OT": {
+      "runtime_s": 57.03717531496659,
+      "peak_memory_kb": 33750.2158203125,
+      "log_likelihood": -104.99739837646484,
+      "ess_mean": 204.54483032226562
+    }
+  }
+}

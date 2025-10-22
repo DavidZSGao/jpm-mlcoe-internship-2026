@@ -1,0 +1,41 @@
+{
+  "seed": 0,
+  "pfpf_results": {
+    "PF_PF_LEDH": {
+      "runtime_s": 28123.510987645946,
+      "peak_memory_kb": 147142.580078125,
+      "log_likelihood": -13.608262062072754,
+      "ess_mean": 174.5314178466797,
+      "aux_stats": {
+        "mean_flow_log_jacobian": -0.15880578756332397
+      }
+    },
+    "PF_PF_SPF_A": {
+      "runtime_s": 38568.082245648024,
+      "peak_memory_kb": 302741.740234375,
+      "log_likelihood": -9.931926727294922,
+      "ess_mean": 187.72547912597656,
+      "aux_stats": {
+        "mean_flow_log_jacobian": -0.14136725664138794
+      }
+    },
+    "PF_PF_SPF_B": {
+      "runtime_s": 23516.447091307957,
+      "peak_memory_kb": 302614.775390625,
+      "log_likelihood": -9.255029678344727,
+      "ess_mean": 185.74655151367188,
+      "aux_stats": {
+        "mean_flow_log_jacobian": -0.15391944348812103
+      }
+    },
+    "PF_PF_SPF_C": {
+      "runtime_s": 48700.25298035692,
+      "peak_memory_kb": 429326.66015625,
+      "log_likelihood": -13.74629020690918,
+      "ess_mean": 181.9438934326172,
+      "aux_stats": {
+        "mean_flow_log_jacobian": -0.10408870130777359
+      }
+    }
+  }
+}
