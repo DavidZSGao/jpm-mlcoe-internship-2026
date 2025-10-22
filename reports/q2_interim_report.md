@@ -5,7 +5,7 @@ Prepared for the October checkpoint. This report summarizes the current status o
 ## 1. Executive Summary
 - Implemented EKF, UKF, standard PF, Differentiable PF (OT resampling), and multiple particle flows (EDH, LEDH, Kernel, Stochastic) under `mlcoe_q2/`.
 - Baseline single-seed benchmarks are complete and documented in `reports/q2_benchmark_report.md` with artifacts under `reports/artifacts/`.
-- Next step in progress: multi-seed benchmarking for robustness, and PF-PF with stochastic flow proposal.
+- Completed multi-seed benchmarking for filters and PF-PF (Stochastic vs LEDH). Generated Li (2017)-style Kernel flow plots and embedded them in both reports. See `reports/q2/README.md` for the deliverables index.
 
 ## 2. Methods Implemented
 - **Classical filters**: `extended_kalman_filter()`, `unscented_kalman_filter()` in `mlcoe_q2/filters/`.
@@ -40,6 +40,11 @@ Aggregated over 5 seeds from `reports/artifacts/benchmark_filters_multiseed.json
 
 See `reports/q2/status/filter_status.md` for the generated status snapshot.
 
+### Discussion
+- **Likelihood vs ESS**: `EKF/UKF` achieve the least negative log-likelihoods. `Differentiable PF` increases ESS vs `PF` but reduces log-likelihood—likely due to OT regularization/tuning.
+- **Runtime/Memory**: `UKF` is fastest; `EKF` stable at ~10.6s. `PF/DPF` dominate runtime and memory from resampling/transport; DPF runtime similar to PF here.
+- **Next**: Tune OT hyperparameters to recover likelihood while keeping ESS gains; consider GPU for larger particle counts.
+
 ## 6. PF-PF with Stochastic Flow (Completed)
 Aggregated over 5 seeds from `reports/artifacts/pfpf_stochastic_multiseed.json`.
 
@@ -51,6 +56,11 @@ Aggregated over 5 seeds from `reports/artifacts/pfpf_stochastic_multiseed.json`.
 Notes:
 - Stochastic flow is ~35% faster and improves (less negative) log-likelihood with similar ESS.
 - Higher peak memory reflects diffusion and additional computations.
+
+### Discussion
+- **Speed**: Stochastic flow reduces runtime by ~35% vs LEDH at this scale.
+- **Accuracy/Stability**: Better average log-likelihood with comparable ESS suggests diffusion improves exploration without worsening weight degeneracy.
+- **Memory**: Higher peak memory is an acceptable trade-off given speed/likelihood gains.
 
 ## 7. Reproducing Li (2017) Plots (Completed)
 Figures generated via `mlcoe_q2/experiments/plot_flow_diagnostics.py` for Kernel flows.
@@ -82,7 +92,18 @@ Figures (by flow variant):
 - Consider GPU for EDH/LEDH and OT resampling to reduce runtime.
 - Tune DPF hyperparameters (Sinkhorn epsilon, iterations, mix-with-uniform) to improve likelihood while keeping ESS gains.
 
-## 9. Conclusion
-- Core implementations are complete and validated on single seed.
-- Multi-seed filters are running; flows and PF-PF comparisons to follow.
-- Final deliverable will include robustness tables, Li (2017) reproduction plots, and analysis narrative.
+## 9. DPF Resampling Comparisons (Multi-Seed)
+Aggregated results from `reports/q2/status/dpf_comparisons.md`.
+
+- **Soft vs OT**: Soft resampling (no transport) gives higher (less negative) log-likelihood but lowest ESS; OT substantially improves ESS with a trade-off in likelihood. Runtime and peak memory are comparable at this scale.
+
+## 10. PF-PF Dai (2022) Parameter Sweep (Multi-Seed)
+Aggregated results from `reports/q2/status/pfpf_dai22.md`.
+
+- **Best setting here**: `SPF_B (step=0.6, steps=8, diff=0.10)` improves log-likelihood vs LEDH with similar ESS.
+- **Performance**: Some stochastic settings run faster than LEDH; diffusion/steps increase memory as expected.
+
+## 11. Conclusion
+- Core implementations and multi-seed benchmarks are complete (filters + PF-PF).
+- Li (2017)-style Kernel flow diagnostics are generated and embedded.
+- Remaining: finalize narrative polish, optional PDF export for submission. See `reports/q2/README.md` for a deliverables index.

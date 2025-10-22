@@ -38,6 +38,7 @@ def differentiable_particle_filter(
     ot_num_iters: int = 20,
     epsilon_schedule: Optional[Sequence[float]] = None,
     sinkhorn_tolerance: float = 1e-3,
+    resampling_method: str = "ot",
 ) -> DifferentiablePFResult:
     """Run a differentiable particle filter with OT-based resampling."""
 
@@ -220,17 +221,37 @@ def differentiable_particle_filter(
         )
         diagnostics["epsilon"] = diagnostics["epsilon"].write(index, epsilon_value)
 
-        transport_plan = _entropy_regularized_transport(
-            mixed_weights,
-            propagated_particles,
-            epsilon_value,
-            ot_num_iters,
-            sinkhorn_tolerance,
-        )
-
-        resampled_particles = tf.matmul(transport_plan, propagated_particles)
-        resampled_weights = uniform_weights
-        resampled_log_weights = tf.math.log(resampled_weights)
+        if resampling_method == "ot":
+            transport_plan = _entropy_regularized_transport(
+                mixed_weights,
+                propagated_particles,
+                epsilon_value,
+                ot_num_iters,
+                sinkhorn_tolerance,
+            )
+            resampled_particles = tf.matmul(transport_plan, propagated_particles)
+            resampled_weights = uniform_weights
+            resampled_log_weights = tf.math.log(resampled_weights)
+        elif resampling_method == "ot_low":
+            low_iters = max(1, min(int(ot_num_iters), 5))
+            transport_plan = _entropy_regularized_transport(
+                mixed_weights,
+                propagated_particles,
+                epsilon_value,
+                low_iters,
+                sinkhorn_tolerance,
+            )
+            resampled_particles = tf.matmul(transport_plan, propagated_particles)
+            resampled_weights = uniform_weights
+            resampled_log_weights = tf.math.log(resampled_weights)
+        elif resampling_method == "soft":
+            # Baseline: keep particles, use mixed soft weights (no transport)
+            transport_plan = tf.eye(num_particles, dtype=tf.float32)
+            resampled_particles = propagated_particles
+            resampled_weights = mixed_weights
+            resampled_log_weights = tf.math.log(tf.maximum(resampled_weights, 1e-12))
+        else:
+            raise ValueError("Unknown resampling_method: " + str(resampling_method))
 
         transport_ta = transport_ta.write(index, transport_plan)
         particles_ta = particles_ta.write(index + 1, resampled_particles)

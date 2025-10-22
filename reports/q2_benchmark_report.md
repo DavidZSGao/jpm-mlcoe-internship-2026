@@ -140,3 +140,19 @@ Artifacts index: `reports/q2/status/li2017_pfpf_reproduction.md`
 ![LEDH ESS](figures/li2017_pfpf_LEDH_ess.png)
 ![LEDH |log-J|](figures/li2017_pfpf_LEDH_logj.png)
 ![LEDH per-step LL (normalized)](figures/li2017_pfpf_LEDH_loglik.png)
+
+## Differentiable PF: Resampling Comparisons (Multi-Seed)
+Compare soft weights (no transport) vs OT low-iter vs full OT across seeds.
+
+Artifacts index: `reports/q2/status/dpf_comparisons.md`
+
+- **Runtime/Memory**: OT is slightly faster on average at this scale; memory broadly similar.
+- **Likelihood vs ESS**: Soft yields best (least negative) log-likelihood but lowest ESS. OT increases ESS substantially with a trade-off in likelihood.
+
+## PF-PF (Dai 2022-style) Parameter Sweep (Multi-Seed)
+LEDH vs stochastic flow configurations approximating Dai (2022) (smaller step-size, more steps, varying diffusion).
+
+Artifacts index: `reports/q2/status/pfpf_dai22.md`
+
+- **Accuracy**: `SPF_B (step=0.6, steps=8, diff=0.10)` improves log-likelihood over LEDH with similar ESS.
+- **Runtime/Memory**: Some SPF settings are faster than LEDH; higher diffusion/steps increase memory.
