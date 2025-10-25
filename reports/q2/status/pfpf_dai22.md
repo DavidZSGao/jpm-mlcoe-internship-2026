@@ -10,3 +10,10 @@
 ## Notes
 - Aggregated across multiple seeds
 - Stochastic Particle Flow configurations approximate Dai (2022): smaller step-size, more steps, variable diffusion
+
+## Reproduce
+
+```bash
+python -m mlcoe_q2.pipelines.run_pfpf_dai22_multiseed \
+  --config configs/q2/run_pfpf_dai22_multiseed.json
+```

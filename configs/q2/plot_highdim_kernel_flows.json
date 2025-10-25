@@ -1,0 +1,9 @@
+{
+  "seeds": [0],
+  "num_timesteps": 10,
+  "particles": 256,
+  "state_dim": 16,
+  "obs_dim": 4,
+  "outdir": "reports/figures",
+  "status_md": "reports/q2/status/hu2021_plots.md"
+}

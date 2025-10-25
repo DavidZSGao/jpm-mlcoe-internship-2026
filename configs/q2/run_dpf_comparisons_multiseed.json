@@ -1,0 +1,8 @@
+{
+  "seeds": [0, 1, 2, 3, 4],
+  "num_timesteps": 15,
+  "particles": 256,
+  "outdir": "reports/artifacts",
+  "aggregate_out": "reports/artifacts/dpf_comparisons_multiseed.json",
+  "status_md": "reports/q2/status/dpf_comparisons.md"
+}

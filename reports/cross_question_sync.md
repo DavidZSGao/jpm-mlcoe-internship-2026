@@ -1,7 +1,7 @@
 # Cross-Question Coordination Plan
 
 ## Active Workstreams
-- **Q2 — Particle Flows:** Continue with benchmarking + reporting tasks outlined in `reports/q2_gap_closure_plan.md` (Li 2017 plot reproduction, stochastic flow comparisons, HMC integration experiments).
+- **Q2 — Particle Flows:** Continue with benchmarking + reporting tasks outlined in `reports/q2/gap_closure_plan.md` (Li 2017 plot reproduction, stochastic flow comparisons, HMC integration experiments).
 - **Q1 — Lending Application:** Kick off data ingestion + constraint modelling per `reports/q1/notes/q1_project_plan.md` while aligning reporting conventions.
 
 ## Immediate Next Actions

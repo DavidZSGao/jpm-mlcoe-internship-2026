@@ -9,3 +9,10 @@
 ## Notes
 - Aggregated across multiple seeds
 - Methods: soft weights (no transport), OT low-iter, and full OT
+
+## Reproduce
+
+```bash
+python -m mlcoe_q2.pipelines.run_dpf_comparisons_multiseed \
+  --config configs/q2/run_dpf_comparisons_multiseed.json
+```

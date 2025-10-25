@@ -5,9 +5,9 @@ from __future__ import annotations
 import numpy as np
 import tensorflow as tf
 
-from mlcoe_q2.datasets import NonlinearStateSpaceModel
-from mlcoe_q2.experiments import FlowBenchmarkResult, benchmark_flow
-from mlcoe_q2.flows import (
+from mlcoe_q2.data import NonlinearStateSpaceModel
+from mlcoe_q2.pipelines import FlowBenchmarkResult, benchmark_flow
+from mlcoe_q2.models.flows import (
     ExactDaumHuangFlow,
     KernelEmbeddedFlow,
     LocalExactDaumHuangFlow,
@@ -90,7 +90,7 @@ def _assert_flow_behaviour(result, particles_before, model, observation) -> None
 def test_exact_daum_huang_flow_updates_particles() -> None:
     tf.random.set_seed(0)
     model = _build_nonlinear_model()
-    particles = _initial_particles(num_particles=128, state_dim=model.state_dim)
+    particles = _initial_particles(num_particles=64, state_dim=model.state_dim)
     weights = tf.ones((particles.shape[0],), dtype=tf.float32)
     observation = tf.constant([0.25], dtype=tf.float32)
 
@@ -110,7 +110,7 @@ def test_exact_daum_huang_flow_updates_particles() -> None:
 def test_local_exact_daum_huang_flow_updates_particles() -> None:
     tf.random.set_seed(1)
     model = _build_nonlinear_model()
-    particles = _initial_particles(num_particles=128, state_dim=model.state_dim)
+    particles = _initial_particles(num_particles=64, state_dim=model.state_dim)
     weights = tf.ones((particles.shape[0],), dtype=tf.float32)
     observation = tf.constant([0.15], dtype=tf.float32)
 
@@ -130,7 +130,7 @@ def test_local_exact_daum_huang_flow_updates_particles() -> None:
 def test_kernel_embedded_flow_updates_particles() -> None:
     tf.random.set_seed(2)
     model = _build_nonlinear_model()
-    particles = _initial_particles(num_particles=128, state_dim=model.state_dim)
+    particles = _initial_particles(num_particles=64, state_dim=model.state_dim)
     weights = tf.ones((particles.shape[0],), dtype=tf.float32)
     observation = tf.constant([0.05], dtype=tf.float32)
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import tensorflow as tf
 
-from mlcoe_q2.datasets import NonlinearStateSpaceModel
-from mlcoe_q2.filters import differentiable_particle_filter
+from mlcoe_q2.data import NonlinearStateSpaceModel
+from mlcoe_q2.models.filters import differentiable_particle_filter
 
 
 def _build_benchmark_model() -> NonlinearStateSpaceModel:

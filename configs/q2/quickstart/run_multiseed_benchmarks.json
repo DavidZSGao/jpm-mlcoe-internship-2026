@@ -1,0 +1,7 @@
+{
+  "seeds": [0],
+  "num_timesteps": 8,
+  "outdir": "reports/artifacts/quickstart",
+  "aggregate_out": "reports/artifacts/quickstart/filter_benchmark.json",
+  "status_md": "reports/q2/status/quickstart/filter_benchmark.md"
+}

@@ -6,10 +6,10 @@ from __future__ import annotations
 import numpy as np
 import tensorflow as tf
 
-from mlcoe_q2.datasets import LinearGaussianSSM, NonlinearStateSpaceModel
-from mlcoe_q2.filters import particle_filter, particle_flow_particle_filter
-from mlcoe_q2.flows import ExactDaumHuangFlow
-from mlcoe_q2.flows.base import ParticleFlowResult
+from mlcoe_q2.data import LinearGaussianSSM, NonlinearStateSpaceModel
+from mlcoe_q2.models.filters import particle_filter, particle_flow_particle_filter
+from mlcoe_q2.models.flows import ExactDaumHuangFlow
+from mlcoe_q2.models.flows.base import ParticleFlowResult
 
 
 class IdentityFlow:

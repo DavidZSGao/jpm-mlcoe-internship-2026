@@ -1,0 +1,12 @@
+{
+  "num_steps": 12,
+  "seed": 7,
+  "num_particles": 32,
+  "pmmh_iters": 80,
+  "pmmh_proposal_std": 0.08,
+  "hmc_samples": 90,
+  "hmc_step_size": 0.08,
+  "hmc_leapfrog": 3,
+  "output": "reports/artifacts/quickstart/pmmh_vs_hmc_quick.json",
+  "eager": true
+}

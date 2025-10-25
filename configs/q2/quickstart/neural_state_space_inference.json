@@ -1,0 +1,19 @@
+{
+  "num_timesteps": 20,
+  "latent_dim": 3,
+  "observation_dim": 2,
+  "true_log_process_scale": -0.2,
+  "true_log_observation_scale": -0.4,
+  "dpf_num_particles": 48,
+  "pg_num_particles": 64,
+  "random_seed": 21,
+  "hmc_num_results": 120,
+  "hmc_burnin": 40,
+  "hmc_step_size": 0.035,
+  "hmc_proposal_noise": 0.02,
+  "pg_iterations": 160,
+  "pg_step_size": 0.1,
+  "output_json": "reports/artifacts/quickstart/neural_state_space_inference.json",
+  "status_md": "reports/q2/status/quickstart/neural_state_space_inference.md",
+  "dpf_resampling": "soft"
+}

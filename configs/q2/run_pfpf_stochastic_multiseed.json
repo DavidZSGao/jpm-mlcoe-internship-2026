@@ -1,0 +1,7 @@
+{
+  "seeds": [0, 1, 2, 3, 4],
+  "num_timesteps": 15,
+  "outdir": "reports/artifacts",
+  "aggregate_out": "reports/artifacts/pfpf_stochastic_multiseed.json",
+  "status_md": "reports/q2/status/pfpf_status.md"
+}

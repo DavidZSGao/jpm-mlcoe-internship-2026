@@ -1,0 +1,12 @@
+{
+  "num_steps": 40,
+  "seed": 4,
+  "num_seeds": 5,
+  "num_particles": 192,
+  "mix_with_uniform": 0.15,
+  "ot_epsilon": 0.25,
+  "ot_num_iters": 25,
+  "output_json": "reports/artifacts/nonlinear_diagnostics.json",
+  "rmse_figure": "reports/figures/nonlinear_rmse.png",
+  "ess_figure": "reports/figures/nonlinear_ess.png"
+}

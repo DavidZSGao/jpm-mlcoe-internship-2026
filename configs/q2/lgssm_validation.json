@@ -1,0 +1,6 @@
+{
+  "num_steps": 75,
+  "seed": 7,
+  "output_json": "reports/artifacts/lgssm_validation_summary.json",
+  "figure_path": "reports/figures/lgssm_validation_means.png"
+}

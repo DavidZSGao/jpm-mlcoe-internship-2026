@@ -18,3 +18,10 @@
   - Movement: `reports/figures/hu2021_KernelMatrix_movement.png`
   - Log-Jacobian: `reports/figures/hu2021_KernelMatrix_logjac.png`
   - Observed variance: `reports/figures/hu2021_KernelMatrix_obsvar.png`
+
+## Reproduce
+
+```bash
+python -m mlcoe_q2.pipelines.plot_highdim_kernel_flows \
+  --config configs/q2/plot_highdim_kernel_flows.json
+```

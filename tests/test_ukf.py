@@ -5,8 +5,8 @@ from __future__ import annotations
 import numpy as np
 import tensorflow as tf
 
-from mlcoe_q2.datasets import LinearGaussianSSM, NonlinearStateSpaceModel
-from mlcoe_q2.filters import kalman_filter, unscented_kalman_filter
+from mlcoe_q2.data import LinearGaussianSSM, NonlinearStateSpaceModel
+from mlcoe_q2.models.filters import kalman_filter, unscented_kalman_filter
 
 
 def _build_linear_system() -> tuple[LinearGaussianSSM, NonlinearStateSpaceModel]:

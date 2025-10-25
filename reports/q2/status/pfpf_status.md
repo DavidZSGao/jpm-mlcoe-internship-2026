@@ -8,3 +8,10 @@
 ## Notes
 - Aggregated across multiple seeds
 - LEDH vs Stochastic flow used as PF-PF proposals
+
+## Reproduce
+
+```bash
+python -m mlcoe_q2.pipelines.run_pfpf_stochastic_multiseed \
+  --config configs/q2/run_pfpf_stochastic_multiseed.json
+```

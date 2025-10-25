@@ -1,0 +1,7 @@
+{
+  "seeds": [0],
+  "num_timesteps": 15,
+  "particles": 256,
+  "outdir": "reports/figures",
+  "status_md": "reports/q2/status/li2017_plots.md"
+}

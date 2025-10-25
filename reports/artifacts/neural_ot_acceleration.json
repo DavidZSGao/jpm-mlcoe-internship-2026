@@ -1,0 +1,36 @@
+{
+  "config": {
+    "num_particles": 8,
+    "state_dim": 4,
+    "epsilon_range": [
+      0.05,
+      0.4
+    ],
+    "num_samples": 64,
+    "validation_split": 0.2,
+    "test_split": 0.1,
+    "batch_size": 8,
+    "epochs": 6,
+    "learning_rate": 0.001,
+    "hidden_units": [
+      48,
+      24
+    ],
+    "sinkhorn_iters": 8,
+    "sinkhorn_tolerance": 0.001,
+    "random_seed": 9
+  },
+  "metrics": {
+    "train_loss": 0.36226916313171387,
+    "val_loss": 0.5215449929237366,
+    "test_loss": 0.40152063965797424,
+    "test_mae": 0.39280810952186584,
+    "row_normalization_error": 0.020833348855376244,
+    "plan_l1_error": 0.20428740978240967,
+    "neural_seconds": 0.010304765999990195,
+    "sinkhorn_seconds": 0.3167148400000315,
+    "per_sample_neural": 0.0017174609999983659,
+    "per_sample_sinkhorn": 0.05278580666667191,
+    "relative_speedup": 30.73479203703731
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "num_timesteps": 4,
+  "latent_dim": 2,
+  "observation_dim": 1,
+  "control_dim": 0,
+  "true_log_process_scale": -0.2,
+  "true_log_observation_scale": -0.35,
+  "dpf_num_particles": 6,
+  "pg_num_particles": 6,
+  "random_seed": 21,
+  "hmc_num_results": 12,
+  "hmc_burnin": 4,
+  "hmc_step_size": 0.05,
+  "hmc_proposal_noise": 0.06,
+  "pg_iterations": 14,
+  "pg_step_size": 0.08,
+  "prior_scale": 1.0,
+  "dpf_resampling": "soft",
+  "output_json": "reports/artifacts/neural_state_space_inference.json",
+  "status_md": "reports/q2/status/bonus_neural_ssm.md"
+}

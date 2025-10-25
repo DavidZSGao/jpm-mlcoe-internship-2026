@@ -8,3 +8,10 @@
   - ESS: `reports/figures/li2017_pfpf_LEDH_ess.png`
   - |log-J|: `reports/figures/li2017_pfpf_LEDH_logj.png`
   - Per-step LL (normalized): `reports/figures/li2017_pfpf_LEDH_loglik.png`
+
+## Reproduce
+
+```bash
+python -m mlcoe_q2.pipelines.reproduce_li17_pfpf \
+  --config configs/q2/reproduce_li17_pfpf.json
+```

@@ -1,0 +1,7 @@
+{
+  "seeds": [0],
+  "num_timesteps": 10,
+  "outdir": "reports/artifacts/quickstart",
+  "aggregate_out": "reports/artifacts/quickstart/pfpf_dai22.json",
+  "status_md": "reports/q2/status/quickstart/pfpf_dai22.md"
+}

@@ -10,3 +10,10 @@
 ## Notes
 - **seeds**: aggregated across multiple seeds
 - **DPF** uses OT resampling; hyperparameters fixed for comparability
+
+## Reproduce
+
+```bash
+python -m mlcoe_q2.pipelines.run_multiseed_benchmarks \
+  --config configs/q2/run_multiseed_benchmarks.json
+```

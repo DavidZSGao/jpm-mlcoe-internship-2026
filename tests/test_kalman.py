@@ -5,8 +5,8 @@ from __future__ import annotations
 import numpy as np
 import tensorflow as tf
 
-from mlcoe_q2.datasets import LinearGaussianSSM
-from mlcoe_q2.filters import kalman_filter
+from mlcoe_q2.data import LinearGaussianSSM
+from mlcoe_q2.models.filters import kalman_filter
 
 
 def build_lgssm() -> LinearGaussianSSM:
