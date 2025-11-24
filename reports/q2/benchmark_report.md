@@ -106,19 +106,19 @@ Figures (by flow variant):
 - KernelMatrix: `reports/figures/li2017_KernelMatrix_residuals.png`, `li2017_KernelMatrix_movement.png`, `li2017_KernelMatrix_logjac.png`
 
 ### KernelScalar
-![KernelScalar residuals](figures/li2017_KernelScalar_residuals.png)
-![KernelScalar movement](figures/li2017_KernelScalar_movement.png)
-![KernelScalar |log-J|](figures/li2017_KernelScalar_logjac.png)
+![KernelScalar residuals](../figures/li2017_KernelScalar_residuals.png)
+![KernelScalar movement](../figures/li2017_KernelScalar_movement.png)
+![KernelScalar |log-J|](../figures/li2017_KernelScalar_logjac.png)
 
 ### KernelDiagonal
-![KernelDiagonal residuals](figures/li2017_KernelDiagonal_residuals.png)
-![KernelDiagonal movement](figures/li2017_KernelDiagonal_movement.png)
-![KernelDiagonal |log-J|](figures/li2017_KernelDiagonal_logjac.png)
+![KernelDiagonal residuals](../figures/li2017_KernelDiagonal_residuals.png)
+![KernelDiagonal movement](../figures/li2017_KernelDiagonal_movement.png)
+![KernelDiagonal |log-J|](../figures/li2017_KernelDiagonal_logjac.png)
 
 ### KernelMatrix
-![KernelMatrix residuals](figures/li2017_KernelMatrix_residuals.png)
-![KernelMatrix movement](figures/li2017_KernelMatrix_movement.png)
-![KernelMatrix |log-J|](figures/li2017_KernelMatrix_logjac.png)
+![KernelMatrix residuals](../figures/li2017_KernelMatrix_residuals.png)
+![KernelMatrix movement](../figures/li2017_KernelMatrix_movement.png)
+![KernelMatrix |log-J|](../figures/li2017_KernelMatrix_logjac.png)
 
 ## High-Dimensional Kernel Flows (Hu, 2021)
 Demonstration of observed-marginal collapse prevention using matrix-valued kernels in higher dimensions.
@@ -126,13 +126,13 @@ Demonstration of observed-marginal collapse prevention using matrix-valued kerne
 Artifacts index: `reports/q2/status/hu2021_plots.md`
 
 ### KernelScalar (state=16, obs=4)
-![Observed variance](figures/hu2021_KernelScalar_obsvar.png)
+![Observed variance](../figures/hu2021_KernelScalar_obsvar.png)
 
 ### KernelDiagonal (state=16, obs=4)
-![Observed variance](figures/hu2021_KernelDiagonal_obsvar.png)
+![Observed variance](../figures/hu2021_KernelDiagonal_obsvar.png)
 
 ### KernelMatrix (state=16, obs=4)
-![Observed variance](figures/hu2021_KernelMatrix_obsvar.png)
+![Observed variance](../figures/hu2021_KernelMatrix_obsvar.png)
 
 ## Li (2017) PF-PF Reproduction (EDH vs LEDH)
 Seeded PF-PF runs to visualize ESS, |log-J|, and normalized per-step log-likelihood.
@@ -140,14 +140,14 @@ Seeded PF-PF runs to visualize ESS, |log-J|, and normalized per-step log-likelih
 Artifacts index: `reports/q2/status/li2017_pfpf_reproduction.md`
 
 ### EDH
-![EDH ESS](figures/li2017_pfpf_EDH_ess.png)
-![EDH |log-J|](figures/li2017_pfpf_EDH_logj.png)
-![EDH per-step LL (normalized)](figures/li2017_pfpf_EDH_loglik.png)
+![EDH ESS](../figures/li2017_pfpf_EDH_ess.png)
+![EDH |log-J|](../figures/li2017_pfpf_EDH_logj.png)
+![EDH per-step LL (normalized)](../figures/li2017_pfpf_EDH_loglik.png)
 
 ### LEDH
-![LEDH ESS](figures/li2017_pfpf_LEDH_ess.png)
-![LEDH |log-J|](figures/li2017_pfpf_LEDH_logj.png)
-![LEDH per-step LL (normalized)](figures/li2017_pfpf_LEDH_loglik.png)
+![LEDH ESS](../figures/li2017_pfpf_LEDH_ess.png)
+![LEDH |log-J|](../figures/li2017_pfpf_LEDH_logj.png)
+![LEDH per-step LL (normalized)](../figures/li2017_pfpf_LEDH_loglik.png)
 
 ## Differentiable PF: Resampling Comparisons (Multi-Seed)
 Compare soft weights (no transport) vs OT low-iter vs full OT across seeds.
