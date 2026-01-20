@@ -1,0 +1,40 @@
+{
+  "ratios": {
+    "net_income": 118048000000.0,
+    "cost_to_income_ratio": -1.506714022525688,
+    "quick_ratio": null,
+    "debt_to_equity": null,
+    "debt_to_assets": 0.0,
+    "debt_to_capital": null,
+    "interest_coverage": 13.048092598630584,
+    "debt_to_ebit": 0.0
+  },
+  "metadata": {
+    "company_key": "tencent",
+    "scale": 1000000.0,
+    "page_count": 274,
+    "income_table": {
+      "page_index": 123,
+      "strategy": "text_fallback",
+      "lines_scanned": 37
+    },
+    "balance_sheet_table": {
+      "page_index": 23,
+      "strategy": "text_fallback",
+      "lines_scanned": 23
+    },
+    "source_pdf": "data/pdfs/tencent_2025.pdf",
+    "extraction_timestamp_utc": "2026-01-18T21:00:16.773272+00:00",
+    "pdfplumber_version": "0.11.4",
+    "table_strategies": [
+      {
+        "vertical_strategy": "lines",
+        "horizontal_strategy": "lines"
+      },
+      {
+        "vertical_strategy": "text",
+        "horizontal_strategy": "text"
+      }
+    ]
+  }
+}

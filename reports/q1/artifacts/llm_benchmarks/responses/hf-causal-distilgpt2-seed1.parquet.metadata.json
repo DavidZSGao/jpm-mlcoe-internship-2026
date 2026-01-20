@@ -1,0 +1,20 @@
+{
+  "adapter": "hf-causal",
+  "models": [
+    "distilgpt2"
+  ],
+  "seeds": [
+    1
+  ],
+  "temperature": 0.0,
+  "max_new_tokens": 128,
+  "limit": 0,
+  "records": 33,
+  "prompts_path": "reports/q1/artifacts/llm_prompts.parquet",
+  "output_path": "reports/q1/artifacts/llm_benchmarks/responses/hf-causal-distilgpt2-seed1.parquet",
+  "api_base": null,
+  "api_key_env": null,
+  "request_timeout": 60.0,
+  "model_argument": "distilgpt2",
+  "seed_argument": "1"
+}

@@ -1,0 +1,39 @@
+{
+  "ratios": {
+    "net_income": 10127000000.0,
+    "cost_to_income_ratio": 0.9458921567486412,
+    "quick_ratio": 0.9332258453708883,
+    "debt_to_equity": 0.0,
+    "debt_to_assets": 0.0,
+    "debt_to_capital": 0.0,
+    "interest_coverage": 10.206366630076838,
+    "debt_to_ebit": 0.0
+  },
+  "metadata": {
+    "company_key": "gm",
+    "scale": 1000000.0,
+    "page_count": 113,
+    "income_table": {
+      "page_index": 60,
+      "strategy": {
+        "vertical_strategy": "lines",
+        "horizontal_strategy": "lines"
+      },
+      "table_rows": 26
+    },
+    "balance_sheet_table": {
+      "page_index": 61,
+      "strategy": "text_fallback",
+      "lines_scanned": 54
+    },
+    "source_pdf": "reports/q1/references/gm_2023_form10k.pdf",
+    "extraction_timestamp_utc": "2026-01-18T20:58:45.175451+00:00",
+    "pdfplumber_version": "0.11.4",
+    "table_strategies": [
+      {
+        "vertical_strategy": "lines",
+        "horizontal_strategy": "lines"
+      }
+    ]
+  }
+}

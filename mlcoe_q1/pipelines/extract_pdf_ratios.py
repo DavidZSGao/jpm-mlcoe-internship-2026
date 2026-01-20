@@ -854,6 +854,8 @@ COMPANY_CONFIG: Dict[str, Dict] = {
 }
 
 Metadata = Dict[str, object]
+NUMBER_RE = re.compile(r"\(?-?\$?\d[\d,]*(?:\.\d+)?\)?")
+YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
 
 
 def parse_value(token: Optional[str], scale: float) -> Optional[float]:
@@ -913,6 +915,211 @@ def label_matches(label: str, patterns: Optional[Sequence[str]]) -> bool:
             if label.lower().startswith(pattern.lower()):
                 return True
     return False
+
+
+def line_matches(line: str, patterns: Optional[Sequence[str]]) -> bool:
+    if not patterns:
+        return False
+    for pattern in patterns:
+        if pattern is None:
+            continue
+        if any(ch in pattern for ch in "^$.*"):
+            if re.search(pattern, line, re.IGNORECASE):
+                return True
+        else:
+            if pattern.lower() in line.lower():
+                return True
+    return False
+
+
+def _extract_numeric_from_line(line: str, scale: float) -> Optional[float]:
+    matches = NUMBER_RE.findall(line.replace(",", ""))
+    for token in reversed(matches):
+        if YEAR_RE.fullmatch(token.strip("()")):
+            continue
+        value = parse_value(token, scale)
+        if value is not None:
+            return value
+    return None
+
+
+def _candidate_pages(pdf: pdfplumber.PDF, markers: Optional[Sequence[str]]) -> Sequence[int]:
+    if not markers:
+        return range(max(0, len(pdf.pages) - 70), len(pdf.pages))
+    normalized_markers = [_normalize(marker) for marker in markers if marker]
+    hits = set()
+    for idx, page in enumerate(pdf.pages):
+        text = page.extract_text() or ""
+        if not text:
+            continue
+        normalized_text = _normalize(text)
+        if any(marker in normalized_text for marker in normalized_markers):
+            for offset in range(-1, 2):
+                target = idx + offset
+                if 0 <= target < len(pdf.pages):
+                    hits.add(target)
+    if hits:
+        return sorted(hits)
+    if markers:
+        return range(len(pdf.pages))
+    return range(max(0, len(pdf.pages) - 70), len(pdf.pages))
+
+
+def _extract_income_from_text(pdf: pdfplumber.PDF, cfg: Dict) -> Tuple[Dict[str, float], Metadata]:
+    income_cfg = cfg["income"]
+    scale = cfg["scale"]
+    aggregated: Dict[str, float] = {}
+    interest_sum = 0.0
+    interest_seen = set()
+    total_expenses: Optional[float] = None
+    profit_metric: Optional[float] = None
+    pending_key: Optional[str] = None
+    pending_profit_metric = False
+
+    page_candidates = _candidate_pages(pdf, income_cfg.get("table_markers"))
+    for idx in page_candidates:
+        text = pdf.pages[idx].extract_text() or ""
+        if not text:
+            continue
+        for line in text.splitlines():
+            if pending_key or pending_profit_metric:
+                value = _extract_numeric_from_line(line, scale)
+                if value is not None:
+                    if pending_key:
+                        set_if_missing(aggregated, pending_key, value)
+                        pending_key = None
+                    if pending_profit_metric:
+                        profit_metric = value or profit_metric
+                        pending_profit_metric = False
+                    continue
+            if line_matches(line, income_cfg.get("revenue")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "revenue"
+                else:
+                    set_if_missing(aggregated, "revenue", value)
+            elif line_matches(line, income_cfg.get("operating_income")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "operating_income"
+                else:
+                    set_if_missing(aggregated, "operating_income", value)
+            elif line_matches(line, income_cfg.get("net_income")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "net_income"
+                else:
+                    set_if_missing(aggregated, "net_income", value)
+            if line_matches(line, income_cfg.get("interest_labels")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is not None and line not in interest_seen:
+                    interest_sum += abs(value)
+                    interest_seen.add(line)
+            if income_cfg.get("expense_mode") == "label" and line_matches(
+                line, income_cfg.get("expenses_label")
+            ):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "total_expenses"
+                else:
+                    total_expenses = value
+            if income_cfg.get("expense_mode") == "revenue_minus_profit" and line_matches(
+                line, income_cfg.get("profit_label")
+            ):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_profit_metric = True
+                else:
+                    profit_metric = value or profit_metric
+        if aggregated:
+            aggregated["interest_expense"] = interest_sum
+            if income_cfg.get("expense_mode") == "label" and total_expenses is not None:
+                aggregated["total_expenses"] = total_expenses
+            if income_cfg.get("expense_mode") == "revenue_minus_profit":
+                if "revenue" in aggregated and profit_metric is not None:
+                    aggregated["total_expenses"] = abs(aggregated["revenue"] - profit_metric)
+            return aggregated, {
+                "page_index": idx,
+                "strategy": "text_fallback",
+                "lines_scanned": len(text.splitlines()),
+            }
+
+    raise RuntimeError("Income statement table not found")
+
+
+def _extract_balance_from_text(pdf: pdfplumber.PDF, cfg: Dict) -> Tuple[Dict[str, float], Metadata]:
+    balance_cfg = cfg["balance"]
+    scale = cfg["scale"]
+    aggregated: Dict[str, float] = {}
+    pending_key: Optional[str] = None
+
+    page_candidates = _candidate_pages(pdf, balance_cfg.get("table_markers"))
+    for idx in page_candidates:
+        text = pdf.pages[idx].extract_text() or ""
+        if not text:
+            continue
+        for line in text.splitlines():
+            if pending_key:
+                value = _extract_numeric_from_line(line, scale)
+                if value is not None:
+                    set_if_missing(aggregated, pending_key, value)
+                    pending_key = None
+                    continue
+            if line_matches(line, balance_cfg.get("current_assets")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "current_assets"
+                else:
+                    set_if_missing(aggregated, "current_assets", value)
+            elif line_matches(line, balance_cfg.get("inventory")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "inventory"
+                else:
+                    set_if_missing(aggregated, "inventory", value)
+            elif line_matches(line, balance_cfg.get("total_assets")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "total_assets"
+                else:
+                    set_if_missing(aggregated, "total_assets", value)
+            elif line_matches(line, balance_cfg.get("current_liabilities")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "current_liabilities"
+                else:
+                    set_if_missing(aggregated, "current_liabilities", value)
+            elif balance_cfg.get("total_liabilities") and line_matches(
+                line, balance_cfg.get("total_liabilities")
+            ):
+                if "equity" not in line.lower():
+                    value = _extract_numeric_from_line(line, scale)
+                    if value is None:
+                        pending_key = "total_liabilities"
+                    else:
+                        set_if_missing(aggregated, "total_liabilities", value)
+            elif line_matches(line, balance_cfg.get("equity")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is None:
+                    pending_key = "equity"
+                else:
+                    set_if_missing(aggregated, "equity", value)
+            elif line_matches(line, balance_cfg.get("short_term_debt")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is not None:
+                    aggregated["short_term_debt"] = aggregated.get("short_term_debt", 0.0) + value
+            elif line_matches(line, balance_cfg.get("long_term_debt")):
+                value = _extract_numeric_from_line(line, scale)
+                if value is not None:
+                    aggregated["long_term_debt"] = aggregated.get("long_term_debt", 0.0) + value
+        if aggregated:
+            return aggregated, {
+                "page_index": idx,
+                "strategy": "text_fallback",
+                "lines_scanned": len(text.splitlines()),
+            }
+
+    raise RuntimeError("Balance sheet table not found")
 
 
 def set_if_missing(store: Dict[str, float], key: str, value: Optional[float]) -> None:
@@ -1002,7 +1209,7 @@ def extract_income_statement(pdf: pdfplumber.PDF, cfg: Dict) -> Tuple[Dict[str, 
                     'strategy': spec,
                     'table_rows': len(table or []),
                 }
-    raise RuntimeError('Income statement table not found')
+    return _extract_income_from_text(pdf, cfg)
 
 
 def extract_balance_sheet(pdf: pdfplumber.PDF, cfg: Dict) -> Tuple[Dict[str, float], Metadata]:
@@ -1109,7 +1316,7 @@ def extract_balance_sheet(pdf: pdfplumber.PDF, cfg: Dict) -> Tuple[Dict[str, flo
                 }
         if 'total_assets' in aggregated:
             marker_active = False
-    raise RuntimeError('Balance sheet table not found')
+    return _extract_balance_from_text(pdf, cfg)
 
 
 def compute_ratios(pdf_path: Path, company: str) -> Dict[str, object]:
@@ -1126,7 +1333,8 @@ def compute_ratios(pdf_path: Path, company: str) -> Dict[str, object]:
     long_debt = balance.get('long_term_debt', 0.0)
     total_debt = short_debt + long_debt
     if 'total_liabilities' not in balance:
-        balance['total_liabilities'] = balance['total_assets'] - balance['equity']
+        if balance.get('total_assets') is not None and balance.get('equity') is not None:
+            balance['total_liabilities'] = balance['total_assets'] - balance['equity']
 
     current_assets = balance.get('current_assets')
     current_liabilities = balance.get('current_liabilities')

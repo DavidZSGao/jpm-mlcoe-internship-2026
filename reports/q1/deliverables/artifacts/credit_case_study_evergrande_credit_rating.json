@@ -1,0 +1,21 @@
+{
+  "ticker": "3333.HK",
+  "period": "2022-12-31T00:00:00",
+  "rating_bucket": "ccc",
+  "z_score": -0.9209276959336299,
+  "working_capital_ratio": -0.37410639392755846,
+  "retained_earnings_ratio": -0.3295982566862024,
+  "ebit_ratio": -0.04275002747046517,
+  "market_equity_ratio": 0.00893861857174123,
+  "revenue_ratio": 0.12514945564961394,
+  "working_capital": -687734000000.0,
+  "total_assets": 1838338000000.0,
+  "total_liabilities": 2437412000000.0,
+  "retained_earnings": -605913000000.0,
+  "ebit": -78589000000.0,
+  "revenue": 230067000000.0,
+  "market_equity": 21787096170.184933,
+  "shares_outstanding": 13204300900.0,
+  "leverage": 1.325878048541672,
+  "equity_source": "market"
+}

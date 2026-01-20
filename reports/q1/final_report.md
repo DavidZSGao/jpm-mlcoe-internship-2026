@@ -4,8 +4,9 @@
 The Question 1 deliverables provide a full-stack forecasting and reporting environment for Strategic Lending. The deterministic balance‑sheet
 engine enforces accounting identities while a TensorFlow forecaster adds ratio‑based drivers, macro features, and probabilistic heads for
 scenario generation. The Part 2 LLM workflow now benchmarks prompt datasets, evaluates coverage and errors, and synthesizes CFO‑ready
-recommendations that default to deterministic forecasts when LLM responses lack quantitative output. This report consolidates Part 1 and
-Part 2 findings, documents the chosen methods, and records testing evidence for correctness and reproducibility.
+recommendations that default to deterministic forecasts when LLM responses lack quantitative output. Recent benchmarking runs introduce
+structured JSON output enforcement and higher token budgets, lifting numeric coverage for `gpt-4o-mini` to over 80% across 99 prompts. This
+report consolidates Part 1 and Part 2 findings, documents the chosen methods, and records testing evidence for correctness and reproducibility.
 
 ## 1. Literature Review Highlights
 Key literature themes that shaped the solution:
@@ -55,12 +56,13 @@ Mean absolute errors (billions USD) and identity gaps averaged over the latest t
 | MSFT | mlp | 42.64 | 46.48 | 61.47 | 0.000000 |
 | UNP | mlp | 55.50 | 20.28 | 24.45 | 0.000000 |
 
-_Notes: bank MAEs are sub‑$10M, equity MAE is sub‑$10k, and identity gaps are below $1M. HON’s identity gap is undefined due to missing
+_Notes: bank MAEs are sub‑$10M, equity MAE is sub‑$10k, and identity gaps are below $1M. HON's identity gap is undefined due to missing
 liabilities splits in the source statement._
 
 ### 4.3 PDF Ratio Extraction
-PDF ratio extraction workflows now support multiple issuer layouts (GM, LVMH, Tencent), logging extraction provenance and enabling
-ratio‑based CFO narratives in downstream reports.
+PDF ratio extraction workflows now support multiple issuer layouts (GM, LVMH, Tencent, Alibaba, JPM, Exxon, Microsoft, VW, Google),
+including text‑fallback parsing when table extraction fails. Provenance metadata logs source PDFs, page indexes, and table strategies to
+support downstream CFO narratives.
 
 ## 5. Part 2 Results — LLM Benchmarking & Reporting
 - **Prompt datasets** pair structured statements with forecast targets.
@@ -68,12 +70,11 @@ ratio‑based CFO narratives in downstream reports.
   reinforcing the need for stronger models before reliance.
 - **Comparison tooling** aligns deterministic forecasts with LLM outputs and generates recommendation memos for executive review.
 
-LLM coverage summary:
+Latest LLM benchmark summary (99 prompts, 3 seeds):
 
-| Ticker | Coverage | MAE (B) | MAPE |
-| --- | ---: | ---: | ---: |
-| AAPL | 0.0% | N/A | N/A |
-| BAC | 0.0% | N/A | N/A |
+| Model | Max New Tokens | Coverage Mean | MAE Mean (B) | MAPE Mean |
+| --- | ---: | ---: | ---: | ---: |
+| gpt-4o-mini (openai-chat) | 2048 | 81.27% | 9.95 | 1.72 |
 
 ## 6. Testing Plan & Results
 Testing follows a layered strategy:
@@ -85,14 +86,14 @@ Current test coverage includes:
 - `pytest tests/mlcoe_q1 -q` (unit + integration for data pipelines, models, and reporting).
 
 ## 7. Conclusion & Next Steps
-The Question 1 stack now meets the part‑1 forecasting requirements and establishes a defensible LLM benchmarking framework for part‑2.
+The Question 1 stack now meets the Part 1 forecasting requirements and establishes a defensible LLM benchmarking framework for Part 2.
 Recommended follow‑ups:
 - Expand LLM coverage with stronger models and prompt variants.
 - Increase PDF ratio presets for additional issuers.
 - Extend probabilistic scenario support with macro‑driven Monte Carlo overlays.
 
 ## Appendix — Key References & Artifacts
-- Deterministic specification: `reports/q1/deterministic_balance_sheet_spec.md`
-- Literature summary: `reports/q1/literature_summary.md`
-- Interim dashboards: `reports/q1/status/`
+- Deterministic specification: `reports/q1/deterministic_balance_sheet_spec.md` 
+- Literature summary: `reports/q1/literature_summary.md` 
+- Interim dashboards: `reports/q1/status/` 
 - LLM comparison artifacts: `reports/q1/q1_response_summary.md`

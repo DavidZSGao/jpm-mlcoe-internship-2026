@@ -1,0 +1,43 @@
+{
+  "ratios": {
+    "net_income": 2442000000.0,
+    "cost_to_income_ratio": 0.009619666874498976,
+    "quick_ratio": 1.5483064408587812,
+    "debt_to_equity": null,
+    "debt_to_assets": 0.04016828286322191,
+    "debt_to_capital": 1.0,
+    "interest_coverage": null,
+    "debt_to_ebit": 0.08810763123070137
+  },
+  "metadata": {
+    "company_key": "alibaba",
+    "scale": 1000000.0,
+    "page_count": 324,
+    "income_table": {
+      "page_index": 318,
+      "strategy": {
+        "vertical_strategy": "text",
+        "horizontal_strategy": "text"
+      },
+      "table_rows": 21
+    },
+    "balance_sheet_table": {
+      "page_index": 246,
+      "strategy": "text_fallback",
+      "lines_scanned": 40
+    },
+    "source_pdf": "data/pdfs/alibaba_2025.pdf",
+    "extraction_timestamp_utc": "2026-01-18T21:03:52.656959+00:00",
+    "pdfplumber_version": "0.11.4",
+    "table_strategies": [
+      {
+        "vertical_strategy": "lines",
+        "horizontal_strategy": "lines"
+      },
+      {
+        "vertical_strategy": "text",
+        "horizontal_strategy": "text"
+      }
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "ratios": {
+    "net_income": null,
+    "cost_to_income_ratio": null,
+    "quick_ratio": null,
+    "debt_to_equity": 0.0,
+    "debt_to_assets": null,
+    "debt_to_capital": 0.0,
+    "interest_coverage": null,
+    "debt_to_ebit": null
+  },
+  "metadata": {
+    "company_key": "microsoft",
+    "scale": 1000000.0,
+    "page_count": 142,
+    "income_table": {
+      "page_index": 129,
+      "strategy": "text_fallback",
+      "lines_scanned": 29
+    },
+    "balance_sheet_table": {
+      "page_index": 69,
+      "strategy": "text_fallback",
+      "lines_scanned": 31
+    },
+    "source_pdf": "data/pdfs/microsoft_2024.pdf",
+    "extraction_timestamp_utc": "2026-01-18T21:18:38.060158+00:00",
+    "pdfplumber_version": "0.11.4",
+    "table_strategies": [
+      {
+        "vertical_strategy": "lines",
+        "horizontal_strategy": "lines"
+      },
+      {
+        "vertical_strategy": "text",
+        "horizontal_strategy": "text"
+      }
+    ]
+  }
+}

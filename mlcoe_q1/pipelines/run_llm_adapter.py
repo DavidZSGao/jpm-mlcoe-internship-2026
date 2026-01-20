@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Sequence
 
@@ -74,6 +75,7 @@ def _build_prompt(row: pd.Series) -> str:
     schema = json.dumps({name: {} for name in statements}, indent=2)
     parts = [
         "You are a financial modelling assistant.",
+        "Output valid JSON only (no code fences). Use JSON numbers without commas or underscores.",
         "Respond with JSON only using the structure shown below.",
         schema,
         str(row["prompt"]),
@@ -81,17 +83,131 @@ def _build_prompt(row: pd.Series) -> str:
     return "\n\n".join(parts)
 
 
-def _coerce_payload(text: str, statements: Sequence[str]) -> dict[str, dict[str, object]]:
+def _strip_code_fences(text: str) -> str:
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        match = re.search(r"```(?:json)?\\s*(\\{.*\\})\\s*```", stripped, re.DOTALL)
+        if match:
+            stripped = match.group(1).strip()
+        else:
+            lines = stripped.splitlines()
+            if lines and lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip().startswith("```"):
+                lines = lines[:-1]
+            stripped = "\n".join(lines).strip()
+    if "{" in stripped and "}" in stripped:
+        start = stripped.find("{")
+        end = stripped.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            stripped = stripped[start : end + 1]
+    return stripped
+
+
+def _remove_numeric_group_separators(text: str) -> str:
+    parts = text.split('"')
+    for idx in range(0, len(parts), 2):
+        segment = parts[idx]
+        segment = re.sub(r"(?<=\\d)[,_](?=\\d{3}(\\D|$))", "", segment)
+        segment = re.sub(r"(?<=\\d)\\s+(?=\\d)", "", segment)
+        parts[idx] = segment
+    return '"'.join(parts)
+
+
+def _parse_json_payload(text: str) -> dict[str, object]:
     try:
         payload = json.loads(text)
     except json.JSONDecodeError:
-        payload = {}
+        cleaned = _strip_code_fences(text)
+        cleaned = _remove_numeric_group_separators(cleaned)
+        try:
+            payload = json.loads(cleaned)
+        except json.JSONDecodeError:
+            payload = {}
+    if isinstance(payload, dict):
+        return payload
+    return {}
+
+
+def _fallback_parse_payload(
+    text: str,
+    statements: Sequence[str],
+) -> dict[str, dict[str, object]]:
+    cleaned = _strip_code_fences(text)
+    cleaned = _remove_numeric_group_separators(cleaned)
+    payload: dict[str, dict[str, object]] = {}
+    number_pattern = re.compile(r'"([^"]+)"\s*:\s*(-?\d[\d,_.\s]*)')
+    for statement in statements:
+        start = cleaned.find(f'"{statement}"')
+        if start == -1:
+            continue
+        brace_start = cleaned.find("{", start)
+        if brace_start == -1:
+            continue
+        if statement == "balance_sheet":
+            next_start = cleaned.find('"income_statement"', brace_start)
+            section_text = cleaned[brace_start + 1 : next_start] if next_start != -1 else cleaned[brace_start + 1 :]
+        else:
+            section_text = cleaned[brace_start + 1 :]
+        entries: dict[str, object] = {}
+        for match in number_pattern.finditer(section_text):
+            key = match.group(1)
+            raw_value = match.group(2)
+            normalized = re.sub(r"[\s,_]", "", raw_value)
+            try:
+                value = float(normalized)
+            except ValueError:
+                continue
+            entries[key] = value
+        if entries:
+            payload[str(statement)] = entries
+    return payload
+
+
+def _normalize_key(key: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", key.lower())
+
+
+def _canonicalize_section(
+    section: dict[str, object],
+    allowed_keys: Sequence[str],
+) -> dict[str, object]:
+    normalized_map: dict[str, str] = {}
+    collisions: set[str] = set()
+    for key in allowed_keys:
+        normalized = _normalize_key(key)
+        if normalized in normalized_map and normalized_map[normalized] != key:
+            collisions.add(normalized)
+        else:
+            normalized_map[normalized] = key
+    for normalized in collisions:
+        normalized_map.pop(normalized, None)
+
+    remapped: dict[str, object] = {}
+    for key, value in section.items():
+        key_str = str(key)
+        normalized = _normalize_key(key_str)
+        canonical = normalized_map.get(normalized, key_str)
+        remapped[canonical] = value
+    return remapped
+
+
+def _coerce_payload(
+    text: str,
+    statements: Sequence[str],
+    allowed_keys: dict[str, Sequence[str]] | None = None,
+) -> dict[str, dict[str, object]]:
+    payload = _parse_json_payload(text)
+    if not payload:
+        payload = _fallback_parse_payload(text, statements)
 
     result: dict[str, dict[str, object]] = {}
     for name in statements:
         section = payload.get(name, {}) if isinstance(payload, dict) else {}
         if not isinstance(section, dict):
             section = {}
+        if allowed_keys and name in allowed_keys:
+            section = _canonicalize_section(section, allowed_keys[name])
         cleaned: dict[str, object] = {}
         for key, value in section.items():
             cleaned[str(key)] = value
@@ -237,12 +353,24 @@ def main(argv: Sequence[str] | None = None) -> None:
                 row_series = pd.Series(row._asdict())
                 prompt_text = _build_prompt(row_series)
                 statements = [str(x) for x in row_series["statements"]]
+                allowed_keys: dict[str, Sequence[str]] | None = None
+                if "context" in row_series:
+                    try:
+                        context_payload = json.loads(row_series["context"])
+                    except (TypeError, json.JSONDecodeError):
+                        context_payload = None
+                    if isinstance(context_payload, dict):
+                        allowed_keys = {
+                            str(statement): list(payload.keys())
+                            for statement, payload in context_payload.items()
+                            if isinstance(payload, dict)
+                        }
                 completion = adapter.generate(
                     prompt_text,
                     temperature=args.temperature,
                     max_new_tokens=args.max_new_tokens,
                 )
-                payload = _coerce_payload(completion, statements)
+                payload = _coerce_payload(completion, statements, allowed_keys)
                 record = {k: getattr(row, k) for k in ["ticker", "context_period", "target_period"]}
                 record.update(
                     {
@@ -281,4 +409,3 @@ def main(argv: Sequence[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-

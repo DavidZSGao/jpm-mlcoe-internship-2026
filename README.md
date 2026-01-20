@@ -43,7 +43,7 @@ Implementation and benchmarking of sequential Monte Carlo methods including:
 ```bash
 # Create virtual environment
 python3 -m venv venv
-source venv/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -235,7 +235,8 @@ python -m mlcoe_q2.experiments.benchmark
 ## Reports
 
 Reports are located in:
-- `reports/q1/q1_interim_report.md` — consolidated Part 1/Part 2 narrative, methodology, and evaluation tables for Question 1 (current interim deliverable)
+- `reports/q1/final_report.md` — consolidated final report for Question 1 with refreshed artifacts and governance outputs
+- `reports/q1/q1_interim_report.md` — consolidated Part 1/Part 2 narrative, methodology, and evaluation tables for Question 1 (interim deliverable)
 - `reports/q2/` — Question 2 benchmarks and method comparisons
 - `reports/artifacts/` — JSON summaries and validation metrics
 - `reports/figures/` — Visualizations (RMSE curves, ESS traces, etc.)

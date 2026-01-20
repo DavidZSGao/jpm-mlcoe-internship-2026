@@ -1,0 +1,23 @@
+{
+  "baseline": {
+    "count": 18,
+    "avg_rate": 0.08733813755720514,
+    "avg_spread": 0.042338137557205134,
+    "avg_leverage": 0.7110316349088882,
+    "avg_macro_adjustment": 0.0
+  },
+  "optimistic": {
+    "count": 18,
+    "avg_rate": 0.07133813755720514,
+    "avg_spread": 0.026338137557205134,
+    "avg_leverage": 0.7110316349088882,
+    "avg_macro_adjustment": 0.0
+  },
+  "stress": {
+    "count": 18,
+    "avg_rate": 0.10333813755720515,
+    "avg_spread": 0.058338137557205134,
+    "avg_leverage": 0.7110316349088882,
+    "avg_macro_adjustment": 0.0
+  }
+}

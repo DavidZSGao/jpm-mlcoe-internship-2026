@@ -1,0 +1,31 @@
+{
+  "runs": [
+    {
+      "adapter": "openai-chat",
+      "model": "gpt-4o-mini",
+      "seeds": [
+        1,
+        2,
+        3
+      ],
+      "responses_path": "reports/q1/artifacts/llm_benchmarks/responses/openai-chat-gpt-4o-mini-seed1-seed2-seed3.parquet",
+      "metrics_path": "reports/q1/artifacts/llm_benchmarks/metrics/openai-chat-gpt-4o-mini-seed1-seed2-seed3.parquet",
+      "metadata_path": "reports/q1/artifacts/llm_benchmarks/responses/openai-chat-gpt-4o-mini-seed1-seed2-seed3.parquet.metadata.json",
+      "metadata_models": [
+        "gpt-4o-mini"
+      ],
+      "metadata_seeds": [
+        1,
+        2,
+        3
+      ],
+      "temperature": 0.0,
+      "max_new_tokens": 2048,
+      "api_base": null,
+      "api_key_env": "OPENAI_API_KEY",
+      "records": 99
+    }
+  ],
+  "summary": "reports/q1/artifacts/llm_benchmarks/summary.parquet",
+  "seed_summary": "reports/q1/artifacts/llm_benchmarks/summary_by_model.parquet"
+}

@@ -1,0 +1,171 @@
+{
+  "generated_at": "2026-01-20T02:17:31.553741+00:00",
+  "summary": {
+    "total": 16,
+    "present": 15,
+    "missing_required": 0,
+    "missing_optional": 1
+  },
+  "artifacts": [
+    {
+      "name": "Forecaster evaluation",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/forecaster_evaluation.parquet",
+      "relative_path": "reports/q1/artifacts/forecaster_evaluation.parquet",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 9695,
+      "modified": "2026-01-18T20:17:20.793688+00:00",
+      "description": null
+    },
+    {
+      "name": "Forecaster evaluation summary",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/forecaster_evaluation_summary.parquet",
+      "relative_path": "reports/q1/artifacts/forecaster_evaluation_summary.parquet",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 8019,
+      "modified": "2026-01-20T02:17:31.204306+00:00",
+      "description": null
+    },
+    {
+      "name": "Scenario reasonableness diagnostics",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/scenario_reasonableness.parquet",
+      "relative_path": "reports/q1/artifacts/scenario_reasonableness.parquet",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 10000,
+      "modified": "2026-01-20T02:17:31.292430+00:00",
+      "description": null
+    },
+    {
+      "name": "Macro-conditioned scenarios",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/macro_conditioned_scenarios.parquet",
+      "relative_path": "reports/q1/artifacts/macro_conditioned_scenarios.parquet",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 24105,
+      "modified": "2026-01-20T02:17:31.340826+00:00",
+      "description": null
+    },
+    {
+      "name": "Calibration diagnostics",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/forecaster_calibration.parquet",
+      "relative_path": "reports/q1/artifacts/forecaster_calibration.parquet",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 600,
+      "modified": "2026-01-20T02:17:31.347802+00:00",
+      "description": null
+    },
+    {
+      "name": "Scenario package",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/forecaster_scenarios.parquet",
+      "relative_path": "reports/q1/artifacts/forecaster_scenarios.parquet",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 13263,
+      "modified": "2026-01-20T02:17:31.240220+00:00",
+      "description": null
+    },
+    {
+      "name": "Strategic Lending briefing",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/status/strategic_lending_briefing.md",
+      "relative_path": "reports/q1/status/strategic_lending_briefing.md",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 1826,
+      "modified": "2026-01-20T02:17:31.463985+00:00",
+      "description": null
+    },
+    {
+      "name": "Executive summary",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/status/executive_summary.md",
+      "relative_path": "reports/q1/status/executive_summary.md",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 1857,
+      "modified": "2026-01-20T02:17:31.545423+00:00",
+      "description": null
+    },
+    {
+      "name": "Risk warning summary",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/risk_warnings_summary.json",
+      "relative_path": "reports/q1/artifacts/risk_warnings_summary.json",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 19,
+      "modified": "2026-01-18T20:31:37.178441+00:00",
+      "description": null
+    },
+    {
+      "name": "Loan pricing summary",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/loan_pricing_summary.json",
+      "relative_path": "reports/q1/artifacts/loan_pricing_summary.json",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 563,
+      "modified": "2026-01-18T20:17:58.150410+00:00",
+      "description": null
+    },
+    {
+      "name": "Credit dataset metadata",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/data/credit_ratings/altman_features.json",
+      "relative_path": "data/credit_ratings/altman_features.json",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 221,
+      "modified": "2025-10-22T10:37:27.308045+00:00",
+      "description": null
+    },
+    {
+      "name": "Credit feature parquet",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/data/credit_ratings/altman_features.parquet",
+      "relative_path": "data/credit_ratings/altman_features.parquet",
+      "exists": true,
+      "optional": false,
+      "size_bytes": 15426,
+      "modified": "2025-10-22T10:37:27.309563+00:00",
+      "description": "Altman feature dataset for loan pricing"
+    },
+    {
+      "name": "LLM benchmark manifest",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/llm_benchmarks/manifest.json",
+      "relative_path": "reports/q1/artifacts/llm_benchmarks/manifest.json",
+      "exists": true,
+      "optional": true,
+      "size_bytes": 943,
+      "modified": "2026-01-19T22:10:32.824524+00:00",
+      "description": null
+    },
+    {
+      "name": "LLM benchmark summary",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/artifacts/llm_benchmarks/summary_by_model.parquet",
+      "relative_path": "reports/q1/artifacts/llm_benchmarks/summary_by_model.parquet",
+      "exists": true,
+      "optional": true,
+      "size_bytes": 13584,
+      "modified": "2026-01-19T22:10:32.821748+00:00",
+      "description": null
+    },
+    {
+      "name": "Lending package manifest",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/deliverables/lending_package_manifest.json",
+      "relative_path": "reports/q1/deliverables/lending_package_manifest.json",
+      "exists": true,
+      "optional": true,
+      "size_bytes": 4230,
+      "modified": "2026-01-18T20:32:17.835058+00:00",
+      "description": null
+    },
+    {
+      "name": "Orchestration log",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/reports/q1/status/orchestration_report.json",
+      "relative_path": "reports/q1/status/orchestration_report.json",
+      "exists": false,
+      "optional": true,
+      "size_bytes": null,
+      "modified": null,
+      "description": "JSON status output emitted by orchestrate_lending_workflow"
+    }
+  ]
+}

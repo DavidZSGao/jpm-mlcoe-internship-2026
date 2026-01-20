@@ -1,0 +1,41 @@
+{
+  "scenarios": [
+    {
+      "name": "baseline",
+      "description": "Consensus macro view with neutral adjustments",
+      "macro": {
+        "gdp_growth": 0.018,
+        "unemployment_rate": 0.037,
+        "policy_rate": 0.0425
+      },
+      "adjustments": {}
+    },
+    {
+      "name": "mild_downturn",
+      "description": "GDP slows 150 bps and unemployment rises 120 bps; earnings pressure 8%",
+      "macro": {
+        "gdp_growth": 0.003,
+        "unemployment_rate": 0.049,
+        "policy_rate": 0.038
+      },
+      "adjustments": {
+        "pred_net_income": {"mode": "pct", "value": -0.08},
+        "pred_equity": {"mode": "pct", "value": -0.0125}
+      }
+    },
+    {
+      "name": "rate_shock",
+      "description": "Policy rate +200 bps; asset growth slows 1.5%, payout curtailed to preserve equity",
+      "macro": {
+        "gdp_growth": 0.01,
+        "unemployment_rate": 0.042,
+        "policy_rate": 0.0625
+      },
+      "adjustments": {
+        "pred_total_assets": {"mode": "pct", "value": -0.015},
+        "pred_net_income": {"mode": "pct", "value": -0.05},
+        "pred_equity": {"mode": "pct", "value": -0.02}
+      }
+    }
+  ]
+}

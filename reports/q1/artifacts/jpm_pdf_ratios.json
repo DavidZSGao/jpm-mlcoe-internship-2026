@@ -1,0 +1,40 @@
+{
+  "ratios": {
+    "net_income": 37676000000.0,
+    "cost_to_income_ratio": 0.5916313765103539,
+    "quick_ratio": null,
+    "debt_to_equity": 1.0120855739364831,
+    "debt_to_assets": 0.08071078632626455,
+    "debt_to_capital": 0.5030032455112828,
+    "interest_coverage": 0.45155863337148,
+    "debt_to_ebit": 6.408720703548066
+  },
+  "metadata": {
+    "company_key": "jpm",
+    "scale": 1000000.0,
+    "page_count": 372,
+    "income_table": {
+      "page_index": 205,
+      "strategy": "text_fallback",
+      "lines_scanned": 38
+    },
+    "balance_sheet_table": {
+      "page_index": 83,
+      "strategy": "text_fallback",
+      "lines_scanned": 64
+    },
+    "source_pdf": "data/pdfs/jpm_2024.pdf",
+    "extraction_timestamp_utc": "2026-01-18T21:07:34.063504+00:00",
+    "pdfplumber_version": "0.11.4",
+    "table_strategies": [
+      {
+        "vertical_strategy": "lines",
+        "horizontal_strategy": "lines"
+      },
+      {
+        "vertical_strategy": "text",
+        "horizontal_strategy": "text"
+      }
+    ]
+  }
+}

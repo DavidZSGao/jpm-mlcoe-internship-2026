@@ -1,0 +1,113 @@
+{
+  "generated_at": "2026-01-18T20:32:17.834165+00:00",
+  "artifacts": [
+    {
+      "label": "calibration",
+      "path": "reports/q1/artifacts/forecaster_calibration.parquet",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 600,
+      "sha256": "88ce24714bb76085702477208a682bbf6252cd75b9f0a8554107bb78a8cab93d",
+      "package_path": "artifacts/calibration_forecaster_calibration.parquet"
+    },
+    {
+      "label": "credit_case_study",
+      "path": "reports/q1/artifacts/evergrande_credit_rating.json",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 691,
+      "sha256": "22e6690f0094ffe5fe339009a37f1eb8dd7220c797c99f89e5ec35f7668c0474",
+      "package_path": "artifacts/credit_case_study_evergrande_credit_rating.json"
+    },
+    {
+      "label": "credit_dataset",
+      "path": "data/credit_ratings/altman_features.parquet",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 15426,
+      "sha256": "b5304e267fdde6d61f694d3f9c9bf3e69adc615c4cbd6868377f180709006c3b",
+      "package_path": "artifacts/credit_dataset_altman_features.parquet"
+    },
+    {
+      "label": "evaluation_summary",
+      "path": "reports/q1/artifacts/forecaster_evaluation_summary.parquet",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 8019,
+      "sha256": "821df64b6e3ecb77d40ee92f7480aa2700ce97b80100a4ab777bde3f7a9ee9b3",
+      "package_path": "artifacts/evaluation_summary_forecaster_evaluation_summary.parquet"
+    },
+    {
+      "label": "executive_summary",
+      "path": "reports/q1/status/executive_summary.md",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 1809,
+      "sha256": "a427673ad6bdfdd93569c5fe2e7414cd16a0593a8ab1e1ae0cc934c8ebb5df97",
+      "package_path": "artifacts/executive_summary.md"
+    },
+    {
+      "label": "macro_config",
+      "path": "reports/q1/artifacts/macro_scenarios_example.json",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 1162,
+      "sha256": "df6bace51df1a6748215eabf60d7a83f7d23aef76924aaef9df5dcc968f90871",
+      "package_path": "artifacts/macro_config_macro_scenarios_example.json"
+    },
+    {
+      "label": "macro_overlay",
+      "path": "reports/q1/artifacts/macro_conditioned_scenarios.parquet",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 23788,
+      "sha256": "12e545c572e9ef6720c1cdd18e586f930451ac8414da5d1158357bd9b3442af0",
+      "package_path": "artifacts/macro_overlay_macro_conditioned_scenarios.parquet"
+    },
+    {
+      "label": "raw_evaluation",
+      "path": "reports/q1/artifacts/forecaster_evaluation.parquet",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 9695,
+      "sha256": "1dd939bb93a271946d051e14bd87c63b24b8abc37dbcf2e164ce46b86de90460",
+      "package_path": "artifacts/raw_evaluation_forecaster_evaluation.parquet"
+    },
+    {
+      "label": "risk_summary",
+      "path": "reports/q1/artifacts/risk_warnings_summary.json",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 19,
+      "sha256": "7a66701e141495da9072f7d7fa5c5c6a4e17bdac0e4f8f6a508d08aa76b8783b",
+      "package_path": "artifacts/risk_summary.json"
+    },
+    {
+      "label": "scenario_reasonableness",
+      "path": "reports/q1/artifacts/scenario_reasonableness.parquet",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 10000,
+      "sha256": "a8f20de354621e3f3223fe79fc3e82b77d9a00282a8ef896a97e9d3049622e0e",
+      "package_path": "artifacts/scenario_reasonableness_scenario_reasonableness.parquet"
+    },
+    {
+      "label": "scenario_table",
+      "path": "reports/q1/artifacts/forecaster_scenarios.parquet",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 13263,
+      "sha256": "73a66a2dc0a23c8316e100c13f77d487c98d8fd9fbcfdc2fd4476703c575f35b",
+      "package_path": "artifacts/scenario_table_forecaster_scenarios.parquet"
+    },
+    {
+      "label": "strategic_briefing",
+      "path": "reports/q1/status/strategic_lending_briefing.md",
+      "exists": true,
+      "is_file": true,
+      "size_bytes": 1826,
+      "sha256": "226c6eccf32614c3e15db10bd236c79311e8058215b737a19c465eadeeb6e20b",
+      "package_path": "artifacts/strategic_briefing_strategic_lending_briefing.md"
+    }
+  ]
+}

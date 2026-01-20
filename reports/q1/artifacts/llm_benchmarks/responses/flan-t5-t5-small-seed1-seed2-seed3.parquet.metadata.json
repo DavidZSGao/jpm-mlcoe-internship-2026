@@ -1,0 +1,22 @@
+{
+  "adapter": "flan-t5",
+  "models": [
+    "t5-small"
+  ],
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "temperature": 0.0,
+  "max_new_tokens": 256,
+  "limit": 0,
+  "records": 99,
+  "prompts_path": "reports/q1/artifacts/llm_prompts.parquet",
+  "output_path": "reports/q1/artifacts/llm_benchmarks/responses/flan-t5-t5-small-seed1-seed2-seed3.parquet",
+  "api_base": null,
+  "api_key_env": null,
+  "request_timeout": 60.0,
+  "model_argument": "t5-small",
+  "seed_argument": "1,2,3"
+}
