@@ -40,9 +40,6 @@ ENV/
 # Reports artifacts (keep JSON summaries, exclude large figures if needed)
 # reports/figures/*.png
 
-# Local large PDF cache
-data/pdfs/
-
 # Temporary files
 *.log
 *.tmp
