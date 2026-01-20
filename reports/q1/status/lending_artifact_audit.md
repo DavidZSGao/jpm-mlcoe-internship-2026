@@ -1,6 +1,6 @@
 # Strategic Lending Artifact Audit
 
-Generated at 2026-01-20T02:17:31.553741+00:00
+Generated at 2026-01-20T06:35:59.858626+00:00
 
 ## Summary
 
@@ -20,8 +20,8 @@ Generated at 2026-01-20T02:17:31.553741+00:00
 | Calibration diagnostics | ✅ Present | `reports/q1/artifacts/forecaster_calibration.parquet` | Size: 600 bytes |
 | Scenario package | ✅ Present | `reports/q1/artifacts/forecaster_scenarios.parquet` | Size: 13263 bytes |
 | Strategic Lending briefing | ✅ Present | `reports/q1/status/strategic_lending_briefing.md` | Size: 1826 bytes |
-| Executive summary | ✅ Present | `reports/q1/status/executive_summary.md` | Size: 1857 bytes |
-| Risk warning summary | ✅ Present | `reports/q1/artifacts/risk_warnings_summary.json` | Size: 19 bytes |
+| Executive summary | ✅ Present | `reports/q1/status/executive_summary.md` | Size: 1875 bytes |
+| Risk warning summary | ✅ Present | `reports/q1/artifacts/risk_warnings_summary.json` | Size: 1261 bytes |
 | Loan pricing summary | ✅ Present | `reports/q1/artifacts/loan_pricing_summary.json` | Size: 563 bytes |
 | Credit dataset metadata | ✅ Present | `data/credit_ratings/altman_features.json` | Size: 221 bytes |
 | Credit feature parquet | ✅ Present | `data/credit_ratings/altman_features.parquet` | Size: 15426 bytes |

@@ -34,4 +34,5 @@
 - Observations: 27
 
 ## Risk warnings
-- Risk warning summary not available.
+- BBBY: 26 flagged warnings
+- Sears: 6 flagged warnings

@@ -92,8 +92,36 @@ Recommended follow‑ups:
 - Increase PDF ratio presets for additional issuers.
 - Extend probabilistic scenario support with macro‑driven Monte Carlo overlays.
 
+## 8. Bonus Questions — Credit Rating, Risk Warnings, Loan Pricing
+### 8.1 Part B (Bonus Q1) — Credit Rating Model + Shenanigans Checks
+- **Model form.** We implement an Altman Z‑score model (`mlcoe_q1/credit/altman.py`) that maps balance‑sheet and income‑statement ratios
+  into ordinal rating buckets (investment‑grade → ccc).
+- **Training data.** Features are built from Yahoo Finance statements for the portfolio tickers plus Evergrande (`3333.HK`), stored in
+  `data/credit_ratings/altman_features.parquet` with metadata in `data/credit_ratings/altman_features.json`.
+- **Evergrande case study.** The 2022 filing yields a Z‑score of −0.92 (rating bucket `ccc`) with negative working capital and retained
+  earnings, documented in `reports/q1/artifacts/evergrande_credit_rating.json`.
+- **Shenanigans validation.** We test bankrupt‑company annual reports (BBBY and Sears) using the risk‑warning scanner described below;
+  both filings trigger **going concern** and other disclosure flags, demonstrating the tool’s ability to surface warning signals.
+
+### 8.2 Part C (Bonus Q2) — Risk Warning Extraction
+- **Engine.** A keyword‑driven extractor scans annual‑report text chunks for high‑risk disclosures (going concern, liquidity, regulatory,
+  covenant breaches, etc.) and emits structured warnings with snippets.
+- **Bankrupt‑company test.** SEC 10‑K filings for BBBY (2023) and Sears (2017) were ingested from HTML and chunked into 524 passages; the
+  extractor identified 32 warnings (20 going‑concern hits for BBBY; 2 for Sears), recorded in
+  `reports/q1/artifacts/risk_warnings.parquet` and summarised in `reports/q1/artifacts/risk_warnings_summary.json`.
+
+### 8.3 Part D (Bonus Q3) — Loan Pricing Model
+- **Approach.** A term‑loan pricing engine computes spreads over Treasury yields using Altman‑derived credit buckets, leverage, and macro
+  overlays, producing baseline/optimistic/stress scenarios.
+- **Results.** Average all‑in rates are 8.73% (baseline), 7.13% (optimistic), and 10.33% (stress), with full tables in
+  `reports/q1/artifacts/loan_pricing.parquet` and summary stats in `reports/q1/artifacts/loan_pricing_summary.json`.
+
 ## Appendix — Key References & Artifacts
 - Deterministic specification: `reports/q1/deterministic_balance_sheet_spec.md` 
 - Literature summary: `reports/q1/literature_summary.md` 
 - Interim dashboards: `reports/q1/status/` 
 - LLM comparison artifacts: `reports/q1/q1_response_summary.md`
+- Credit rating dataset: `data/credit_ratings/altman_features.parquet`
+- Evergrande case study: `reports/q1/artifacts/evergrande_credit_rating.json`
+- Risk warning summary: `reports/q1/artifacts/risk_warnings_summary.json`
+- Loan pricing summary: `reports/q1/artifacts/loan_pricing_summary.json`

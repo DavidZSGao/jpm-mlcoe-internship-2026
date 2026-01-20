@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-20T02:17:31.553741+00:00",
+  "generated_at": "2026-01-20T06:35:59.858626+00:00",
   "summary": {
     "total": 16,
     "present": 15,
@@ -14,7 +14,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 9695,
-      "modified": "2026-01-18T20:17:20.793688+00:00",
+      "modified": "2026-01-20T02:21:00.991209+00:00",
       "description": null
     },
     {
@@ -24,7 +24,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 8019,
-      "modified": "2026-01-20T02:17:31.204306+00:00",
+      "modified": "2026-01-20T06:35:59.708337+00:00",
       "description": null
     },
     {
@@ -34,7 +34,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 10000,
-      "modified": "2026-01-20T02:17:31.292430+00:00",
+      "modified": "2026-01-20T06:35:59.745540+00:00",
       "description": null
     },
     {
@@ -44,7 +44,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 24105,
-      "modified": "2026-01-20T02:17:31.340826+00:00",
+      "modified": "2026-01-20T06:35:59.767223+00:00",
       "description": null
     },
     {
@@ -54,7 +54,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 600,
-      "modified": "2026-01-20T02:17:31.347802+00:00",
+      "modified": "2026-01-20T06:35:59.771094+00:00",
       "description": null
     },
     {
@@ -64,7 +64,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 13263,
-      "modified": "2026-01-20T02:17:31.240220+00:00",
+      "modified": "2026-01-20T06:35:59.722717+00:00",
       "description": null
     },
     {
@@ -74,7 +74,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 1826,
-      "modified": "2026-01-20T02:17:31.463985+00:00",
+      "modified": "2026-01-20T06:35:59.814312+00:00",
       "description": null
     },
     {
@@ -83,8 +83,8 @@
       "relative_path": "reports/q1/status/executive_summary.md",
       "exists": true,
       "optional": false,
-      "size_bytes": 1857,
-      "modified": "2026-01-20T02:17:31.545423+00:00",
+      "size_bytes": 1875,
+      "modified": "2026-01-20T06:35:59.852975+00:00",
       "description": null
     },
     {
@@ -93,8 +93,8 @@
       "relative_path": "reports/q1/artifacts/risk_warnings_summary.json",
       "exists": true,
       "optional": false,
-      "size_bytes": 19,
-      "modified": "2026-01-18T20:31:37.178441+00:00",
+      "size_bytes": 1261,
+      "modified": "2026-01-20T06:35:05.636317+00:00",
       "description": null
     },
     {
@@ -104,7 +104,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 563,
-      "modified": "2026-01-18T20:17:58.150410+00:00",
+      "modified": "2026-01-20T02:21:01.154222+00:00",
       "description": null
     },
     {
@@ -134,7 +134,7 @@
       "exists": true,
       "optional": true,
       "size_bytes": 943,
-      "modified": "2026-01-19T22:10:32.824524+00:00",
+      "modified": "2026-01-20T02:21:01.020856+00:00",
       "description": null
     },
     {
@@ -144,7 +144,7 @@
       "exists": true,
       "optional": true,
       "size_bytes": 13584,
-      "modified": "2026-01-19T22:10:32.821748+00:00",
+      "modified": "2026-01-20T02:21:01.099506+00:00",
       "description": null
     },
     {
@@ -154,7 +154,7 @@
       "exists": true,
       "optional": true,
       "size_bytes": 4230,
-      "modified": "2026-01-18T20:32:17.835058+00:00",
+      "modified": "2026-01-20T02:21:01.288310+00:00",
       "description": null
     },
     {

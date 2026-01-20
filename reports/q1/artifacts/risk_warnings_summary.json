@@ -1,3 +1,67 @@
 {
-  "summary": []
+  "summary": [
+    {
+      "issuer": "BBBY",
+      "category": "going_concern",
+      "severity": "high",
+      "warning_count": 20,
+      "sections": [
+        "annual_report"
+      ]
+    },
+    {
+      "issuer": "BBBY",
+      "category": "operational",
+      "severity": "medium",
+      "warning_count": 5,
+      "sections": [
+        "annual_report"
+      ]
+    },
+    {
+      "issuer": "BBBY",
+      "category": "regulatory",
+      "severity": "medium",
+      "warning_count": 1,
+      "sections": [
+        "annual_report"
+      ]
+    },
+    {
+      "issuer": "Sears",
+      "category": "capital_markets",
+      "severity": "medium",
+      "warning_count": 1,
+      "sections": [
+        "annual_report"
+      ]
+    },
+    {
+      "issuer": "Sears",
+      "category": "geopolitical",
+      "severity": "medium",
+      "warning_count": 1,
+      "sections": [
+        "annual_report"
+      ]
+    },
+    {
+      "issuer": "Sears",
+      "category": "going_concern",
+      "severity": "high",
+      "warning_count": 2,
+      "sections": [
+        "annual_report"
+      ]
+    },
+    {
+      "issuer": "Sears",
+      "category": "regulatory",
+      "severity": "medium",
+      "warning_count": 2,
+      "sections": [
+        "annual_report"
+      ]
+    }
+  ]
 }
