@@ -44,20 +44,20 @@ forecaster produces multi‑target balance‑sheet predictions with bank‑aware
 ### 4.2 Forecast Accuracy (Latest Two Statement Pairs)
 Mean absolute errors (billions USD) and identity gaps averaged over the latest two statement pairs:
 
-| Ticker | Mode | Assets MAE (B) | Equity MAE (B) | Net Income MAE (B) | Identity Gap (B) |
-| --- | --- | ---: | ---: | ---: | ---: |
-| AAPL | mlp | 17.74 | 17.52 | 67.98 | 0.000000 |
-| BAC | bank_ensemble | <0.01 | <0.01 | 32.17 | <0.001 |
-| C | bank_ensemble | <0.01 | <0.01 | 14.07 | <0.001 |
-| CAT | mlp | 10.60 | 14.53 | 13.20 | -0.000000 |
-| GM | mlp | 18.52 | 20.44 | 16.45 | 0.000000 |
-| HON | mlp | 10.28 | 10.58 | 11.20 | NaN |
-| JPM | bank_ensemble | <0.01 | <0.01 | 59.10 | <0.001 |
-| MSFT | mlp | 42.64 | 46.48 | 61.47 | 0.000000 |
-| UNP | mlp | 55.50 | 20.28 | 24.45 | 0.000000 |
+| Ticker | Mode | Assets MAE (B) | Equity MAE (B) | Identity Gap (B) |
+| --- | --- | ---: | ---: | ---: |
+| AAPL | mlp | 3.58 | 17.90 | 0.00 |
+| BAC | bank_template | 106.40 | 383.35 | 0.00 |
+| C | bank_template | 19.19 | 355.92 | 0.00 |
+| CAT | mlp | 11.33 | 7.26 | 0.00 |
+| GM | mlp | 41.84 | 7.03 | 0.00 |
+| HON | mlp | 19.44 | 3.12 | N/A |
+| JPM | bank_template | 144.24 | 606.87 | 0.00 |
+| MSFT | mlp | 27.83 | 64.07 | 0.00 |
+| UNP | mlp | 29.33 | 0.82 | 9.88 |
 
-_Notes: bank MAEs are sub‑$10M, equity MAE is sub‑$10k, and identity gaps are below $1M. HON's identity gap is undefined due to missing
-liabilities splits in the source statement._
+_Notes: identity gaps are near zero for most issuers, but UNP shows a 9.88B gap; HON’s identity gap is undefined due to missing liabilities
+splits in the source statement. Net‑income MAE is not reported in the latest evaluation artifact._
 
 ### 4.3 PDF Ratio Extraction
 PDF ratio extraction workflows now support multiple issuer layouts (GM, LVMH, Tencent, Alibaba, JPM, Exxon, Microsoft, VW, Google),
