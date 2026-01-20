@@ -23,7 +23,7 @@
       "strategy": "text_fallback",
       "lines_scanned": 23
     },
-    "source_pdf": "data/pdfs/tencent_2025.pdf",
+    "source_pdf": "mlcoe_q1/data/pdfs/tencent_2025.pdf",
     "extraction_timestamp_utc": "2026-01-18T21:00:16.773272+00:00",
     "pdfplumber_version": "0.11.4",
     "table_strategies": [

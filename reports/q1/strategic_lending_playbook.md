@@ -96,7 +96,7 @@ Run with, for example:
 ```bash
 python -m mlcoe_q1.pipelines.extract_pdf_ratios \
     --issuer jpmorgan \
-    --pdf-path data/pdfs/jpm_2023.pdf \
+    --pdf-path mlcoe_q1/data/pdfs/jpm_2024.pdf \
     --output reports/q1/artifacts/jpm_ratios.parquet
 ```
 

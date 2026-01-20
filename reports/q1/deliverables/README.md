@@ -6,7 +6,7 @@ This directory captures the artifacts required to brief the Strategic Lending Di
 | --- | --- | --- | --- | --- |
 | calibration | ✅ | `reports/q1/artifacts/forecaster_calibration.parquet` | 600 | artifacts/calibration_forecaster_calibration.parquet |
 | credit_case_study | ✅ | `reports/q1/artifacts/evergrande_credit_rating.json` | 691 | artifacts/credit_case_study_evergrande_credit_rating.json |
-| credit_dataset | ✅ | `data/credit_ratings/altman_features.parquet` | 15426 | artifacts/credit_dataset_altman_features.parquet |
+| credit_dataset | ✅ | `mlcoe_q1/data/credit_ratings/altman_features.parquet` | 15426 | artifacts/credit_dataset_altman_features.parquet |
 | evaluation_summary | ✅ | `reports/q1/artifacts/forecaster_evaluation_summary.parquet` | 8019 | artifacts/evaluation_summary_forecaster_evaluation_summary.parquet |
 | executive_summary | ✅ | `reports/q1/status/executive_summary.md` | 1809 | artifacts/executive_summary.md |
 | macro_config | ✅ | `reports/q1/artifacts/macro_scenarios_example.json` | 1162 | artifacts/macro_config_macro_scenarios_example.json |

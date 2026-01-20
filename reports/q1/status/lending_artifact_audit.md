@@ -1,6 +1,6 @@
 # Strategic Lending Artifact Audit
 
-Generated at 2026-01-20T06:35:59.858626+00:00
+Generated at 2026-01-20T07:29:17.297606+00:00
 
 ## Summary
 
@@ -23,9 +23,9 @@ Generated at 2026-01-20T06:35:59.858626+00:00
 | Executive summary | ✅ Present | `reports/q1/status/executive_summary.md` | Size: 1875 bytes |
 | Risk warning summary | ✅ Present | `reports/q1/artifacts/risk_warnings_summary.json` | Size: 1261 bytes |
 | Loan pricing summary | ✅ Present | `reports/q1/artifacts/loan_pricing_summary.json` | Size: 563 bytes |
-| Credit dataset metadata | ✅ Present | `data/credit_ratings/altman_features.json` | Size: 221 bytes |
-| Credit feature parquet | ✅ Present | `data/credit_ratings/altman_features.parquet` | Size: 15426 bytes |
+| Credit dataset metadata | ✅ Present | `mlcoe_q1/data/credit_ratings/altman_features.json` | Size: 221 bytes |
+| Credit feature parquet | ✅ Present | `mlcoe_q1/data/credit_ratings/altman_features.parquet` | Size: 15426 bytes |
 | LLM benchmark manifest | ✅ Present | `reports/q1/artifacts/llm_benchmarks/manifest.json` | Size: 943 bytes |
 | LLM benchmark summary | ✅ Present | `reports/q1/artifacts/llm_benchmarks/summary_by_model.parquet` | Size: 13584 bytes |
-| Lending package manifest | ✅ Present | `reports/q1/deliverables/lending_package_manifest.json` | Size: 4230 bytes |
+| Lending package manifest | ✅ Present | `reports/q1/deliverables/lending_package_manifest.json` | Size: 4239 bytes |
 | Orchestration log | ⚠️ Optional | `reports/q1/status/orchestration_report.json` | JSON status output emitted by orchestrate_lending_workflow |

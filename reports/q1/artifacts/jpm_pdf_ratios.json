@@ -23,7 +23,7 @@
       "strategy": "text_fallback",
       "lines_scanned": 64
     },
-    "source_pdf": "data/pdfs/jpm_2024.pdf",
+    "source_pdf": "mlcoe_q1/data/pdfs/jpm_2024.pdf",
     "extraction_timestamp_utc": "2026-01-18T21:07:34.063504+00:00",
     "pdfplumber_version": "0.11.4",
     "table_strategies": [

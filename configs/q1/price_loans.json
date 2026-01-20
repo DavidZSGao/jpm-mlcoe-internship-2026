@@ -1,6 +1,6 @@
 {
   "scenarios": "reports/q1/artifacts/forecaster_scenarios.parquet",
-  "credit_dataset": "data/credit_ratings/altman_features.parquet",
+  "credit_dataset": "mlcoe_q1/data/credit_ratings/altman_features.parquet",
   "macro_sensitivity": "configs/q1/loan_pricing_macro.json",
   "output": "reports/q1/artifacts/loan_pricing.parquet",
   "summary_output": "reports/q1/artifacts/loan_pricing_summary.json"

@@ -21,7 +21,7 @@
     },
     {
       "label": "credit_dataset",
-      "path": "data/credit_ratings/altman_features.parquet",
+      "path": "mlcoe_q1/data/credit_ratings/altman_features.parquet",
       "exists": true,
       "is_file": true,
       "size_bytes": 15426,

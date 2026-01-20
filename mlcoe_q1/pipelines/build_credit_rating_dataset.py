@@ -17,6 +17,8 @@ from mlcoe_q1.credit import (
     derive_altman_inputs,
 )
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
 
 DEFAULT_TICKERS = ["AAPL", "MSFT", "JPM", "BAC", "C", "GM", "HON", "CAT", "UNP", "3333.HK"]
 
@@ -178,13 +180,13 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("data/credit_ratings/altman_features.parquet"),
+        default=REPO_ROOT / "mlcoe_q1/data/credit_ratings/altman_features.parquet",
         help="Destination parquet path for the feature dataset.",
     )
     parser.add_argument(
         "--metadata-output",
         type=Path,
-        default=Path("data/credit_ratings/altman_features.json"),
+        default=REPO_ROOT / "mlcoe_q1/data/credit_ratings/altman_features.json",
         help="Optional JSON metadata output summarising dataset coverage.",
     )
     parser.add_argument("--min-year", type=int, default=2019)

@@ -97,7 +97,7 @@ Recommended follow‑ups:
 - **Model form.** We implement an Altman Z‑score model (`mlcoe_q1/credit/altman.py`) that maps balance‑sheet and income‑statement ratios
   into ordinal rating buckets (investment‑grade → ccc).
 - **Training data.** Features are built from Yahoo Finance statements for the portfolio tickers plus Evergrande (`3333.HK`), stored in
-  `data/credit_ratings/altman_features.parquet` with metadata in `data/credit_ratings/altman_features.json`.
+  `mlcoe_q1/data/credit_ratings/altman_features.parquet` with metadata in `mlcoe_q1/data/credit_ratings/altman_features.json`.
 - **Evergrande case study.** The 2022 filing yields a Z‑score of −0.92 (rating bucket `ccc`) with negative working capital and retained
   earnings, documented in `reports/q1/artifacts/evergrande_credit_rating.json`.
 - **Shenanigans validation.** We test bankrupt‑company annual reports (BBBY and Sears) using the risk‑warning scanner described below;
@@ -121,7 +121,7 @@ Recommended follow‑ups:
 - Literature summary: `reports/q1/literature_summary.md` 
 - Interim dashboards: `reports/q1/status/` 
 - LLM comparison artifacts: `reports/q1/q1_response_summary.md`
-- Credit rating dataset: `data/credit_ratings/altman_features.parquet`
+- Credit rating dataset: `mlcoe_q1/data/credit_ratings/altman_features.parquet`
 - Evergrande case study: `reports/q1/artifacts/evergrande_credit_rating.json`
 - Risk warning summary: `reports/q1/artifacts/risk_warnings_summary.json`
 - Loan pricing summary: `reports/q1/artifacts/loan_pricing_summary.json`

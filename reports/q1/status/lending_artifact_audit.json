@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-20T06:35:59.858626+00:00",
+  "generated_at": "2026-01-20T07:29:17.297606+00:00",
   "summary": {
     "total": 16,
     "present": 15,
@@ -24,7 +24,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 8019,
-      "modified": "2026-01-20T06:35:59.708337+00:00",
+      "modified": "2026-01-20T07:29:17.045842+00:00",
       "description": null
     },
     {
@@ -34,7 +34,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 10000,
-      "modified": "2026-01-20T06:35:59.745540+00:00",
+      "modified": "2026-01-20T07:29:17.122250+00:00",
       "description": null
     },
     {
@@ -44,7 +44,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 24105,
-      "modified": "2026-01-20T06:35:59.767223+00:00",
+      "modified": "2026-01-20T07:29:17.167685+00:00",
       "description": null
     },
     {
@@ -54,7 +54,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 600,
-      "modified": "2026-01-20T06:35:59.771094+00:00",
+      "modified": "2026-01-20T07:29:17.175268+00:00",
       "description": null
     },
     {
@@ -64,7 +64,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 13263,
-      "modified": "2026-01-20T06:35:59.722717+00:00",
+      "modified": "2026-01-20T07:29:17.073992+00:00",
       "description": null
     },
     {
@@ -74,7 +74,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 1826,
-      "modified": "2026-01-20T06:35:59.814312+00:00",
+      "modified": "2026-01-20T07:29:17.223755+00:00",
       "description": null
     },
     {
@@ -84,7 +84,7 @@
       "exists": true,
       "optional": false,
       "size_bytes": 1875,
-      "modified": "2026-01-20T06:35:59.852975+00:00",
+      "modified": "2026-01-20T07:29:17.290866+00:00",
       "description": null
     },
     {
@@ -109,8 +109,8 @@
     },
     {
       "name": "Credit dataset metadata",
-      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/data/credit_ratings/altman_features.json",
-      "relative_path": "data/credit_ratings/altman_features.json",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/mlcoe_q1/data/credit_ratings/altman_features.json",
+      "relative_path": "mlcoe_q1/data/credit_ratings/altman_features.json",
       "exists": true,
       "optional": false,
       "size_bytes": 221,
@@ -119,8 +119,8 @@
     },
     {
       "name": "Credit feature parquet",
-      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/data/credit_ratings/altman_features.parquet",
-      "relative_path": "data/credit_ratings/altman_features.parquet",
+      "path": "/Users/gaozhesi/Documents/\u7b80\u5386/\u9762\u8bd5/Interview Project - JPM/mlcoe_q1/data/credit_ratings/altman_features.parquet",
+      "relative_path": "mlcoe_q1/data/credit_ratings/altman_features.parquet",
       "exists": true,
       "optional": false,
       "size_bytes": 15426,
@@ -153,8 +153,8 @@
       "relative_path": "reports/q1/deliverables/lending_package_manifest.json",
       "exists": true,
       "optional": true,
-      "size_bytes": 4230,
-      "modified": "2026-01-20T02:21:01.288310+00:00",
+      "size_bytes": 4239,
+      "modified": "2026-01-20T07:27:20.116839+00:00",
       "description": null
     },
     {

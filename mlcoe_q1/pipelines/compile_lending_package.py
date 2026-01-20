@@ -34,7 +34,7 @@ DEFAULT_ARTIFACTS = {
     / "reports/q1/artifacts/forecaster_evaluation_summary.parquet",
     "raw_evaluation": REPO_ROOT
     / "reports/q1/artifacts/forecaster_evaluation.parquet",
-    "credit_dataset": REPO_ROOT / "data/credit_ratings/altman_features.parquet",
+    "credit_dataset": REPO_ROOT / "mlcoe_q1/data/credit_ratings/altman_features.parquet",
     "credit_case_study": REPO_ROOT
     / "reports/q1/artifacts/evergrande_credit_rating.json",
 }

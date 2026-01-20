@@ -187,7 +187,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--credit-metadata",
         type=Path,
-        default=REPO_ROOT / "data/credit_ratings/altman_features.json",
+        default=REPO_ROOT / "mlcoe_q1/data/credit_ratings/altman_features.json",
         help="Credit metadata JSON produced by build_credit_rating_dataset",
     )
     parser.add_argument(

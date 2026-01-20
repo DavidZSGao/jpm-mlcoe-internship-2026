@@ -95,11 +95,11 @@ def _default_expectations() -> list[Expectation]:
             "Loan pricing summary", REPO_ROOT / "reports/q1/artifacts/loan_pricing_summary.json"
         ),
         Expectation(
-            "Credit dataset metadata", REPO_ROOT / "data/credit_ratings/altman_features.json"
+            "Credit dataset metadata", REPO_ROOT / "mlcoe_q1/data/credit_ratings/altman_features.json"
         ),
         Expectation(
             "Credit feature parquet",
-            REPO_ROOT / "data/credit_ratings/altman_features.parquet",
+            REPO_ROOT / "mlcoe_q1/data/credit_ratings/altman_features.parquet",
             description="Altman feature dataset for loan pricing",
         ),
         Expectation(
