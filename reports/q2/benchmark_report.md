@@ -135,19 +135,19 @@ Artifacts index: `reports/q2/status/hu2021_plots.md`
 ![Observed variance](../figures/hu2021_KernelMatrix_obsvar.png)
 
 ## Li (2017) PF-PF Reproduction (EDH vs LEDH)
-Seeded PF-PF runs to visualize ESS, |log-J|, and normalized per-step log-likelihood.
+Seeded PF-PF runs to visualize ESS, |log-J|, and per-step log-likelihood.
 
 Artifacts index: `reports/q2/status/li2017_pfpf_reproduction.md`
 
 ### EDH
 ![EDH ESS](../figures/li2017_pfpf_EDH_ess.png)
 ![EDH |log-J|](../figures/li2017_pfpf_EDH_logj.png)
-![EDH per-step LL (normalized)](../figures/li2017_pfpf_EDH_loglik.png)
+![EDH per-step LL](../figures/li2017_pfpf_EDH_loglik.png)
 
 ### LEDH
 ![LEDH ESS](../figures/li2017_pfpf_LEDH_ess.png)
 ![LEDH |log-J|](../figures/li2017_pfpf_LEDH_logj.png)
-![LEDH per-step LL (normalized)](../figures/li2017_pfpf_LEDH_loglik.png)
+![LEDH per-step LL](../figures/li2017_pfpf_LEDH_loglik.png)
 
 ## Differentiable PF: Resampling Comparisons (Multi-Seed)
 Compare soft weights (no transport) vs OT low-iter vs full OT across seeds.

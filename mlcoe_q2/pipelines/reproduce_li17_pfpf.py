@@ -102,11 +102,9 @@ def main(argv: Sequence[str] | None = None) -> None:
                 logj = np.sum(np.abs(logj), axis=-1)
             else:
                 logj = np.abs(logj)
-            # Approx per-step log-likelihood via innovations is not directly returned;
-            # use normalized LL trajectory if present. Fallback: uniform slice of
-            # total LL (for shape visualization only).
             T = int(min(len(ess), observations.shape[0]))
-            ll_traj = np.full((T,), float(res.log_likelihood.numpy()) / max(T, 1))
+            ll_traj = tf.convert_to_tensor(res.log_likelihood_trace, dtype=tf.float32).numpy()
+            ll_traj = np.asarray(ll_traj, dtype=float).ravel()[:T]
 
             ess_series.append(ess[:T])
             logj_series.append(logj[:T])
@@ -119,19 +117,13 @@ def main(argv: Sequence[str] | None = None) -> None:
 
         _plot_series(x, ess_series, f"{name}: ESS trajectory", "ESS", out_ess)
         _plot_series(x, logj_series, f"{name}: |log-J| per step", "|log-J|", out_logj)
-        _plot_series(
-            x,
-            ll_series,
-            f"{name}: per-step log-likelihood (normalized)",
-            "LL (norm.)",
-            out_ll,
-        )
+        _plot_series(x, ll_series, f"{name}: per-step log-likelihood", "LL", out_ll)
 
         md += [
             f"- **{name}**",
             f"  - ESS: `reports/figures/{out_ess.name}`",
             f"  - |log-J|: `reports/figures/{out_logj.name}`",
-            f"  - Per-step LL (normalized): `reports/figures/{out_ll.name}`",
+            f"  - Per-step LL: `reports/figures/{out_ll.name}`",
         ]
 
     args.status_md.parent.mkdir(parents=True, exist_ok=True)

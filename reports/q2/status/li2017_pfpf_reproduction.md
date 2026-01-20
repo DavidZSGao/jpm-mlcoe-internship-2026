@@ -3,11 +3,11 @@
 - **EDH**
   - ESS: `reports/figures/li2017_pfpf_EDH_ess.png`
   - |log-J|: `reports/figures/li2017_pfpf_EDH_logj.png`
-  - Per-step LL (normalized): `reports/figures/li2017_pfpf_EDH_loglik.png`
+  - Per-step LL: `reports/figures/li2017_pfpf_EDH_loglik.png`
 - **LEDH**
   - ESS: `reports/figures/li2017_pfpf_LEDH_ess.png`
   - |log-J|: `reports/figures/li2017_pfpf_LEDH_logj.png`
-  - Per-step LL (normalized): `reports/figures/li2017_pfpf_LEDH_loglik.png`
+  - Per-step LL: `reports/figures/li2017_pfpf_LEDH_loglik.png`
 
 ## Reproduce
 

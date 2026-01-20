@@ -24,6 +24,7 @@ class ParticleFlowParticleFilterResult:
     ancestor_indices: tf.Tensor
     effective_sample_sizes: tf.Tensor
     log_likelihood: tf.Tensor
+    log_likelihood_trace: tf.Tensor
     flow_log_jacobians: tf.Tensor
     flow_diagnostics: list[dict[str, tf.Tensor]]
 
@@ -117,6 +118,7 @@ def particle_flow_particle_filter(
     ancestors_ta = tf.TensorArray(dtype=tf.int32, size=num_timesteps)
     ess_ta = tf.TensorArray(dtype=tf.float32, size=num_timesteps)
     log_jacobian_ta = tf.TensorArray(dtype=tf.float32, size=num_timesteps)
+    log_likelihood_ta = tf.TensorArray(dtype=tf.float32, size=num_timesteps)
     flow_diagnostics: list[dict[str, tf.Tensor]] = []
 
     particles_ta = particles_ta.write(0, initial_particles)
@@ -206,6 +208,7 @@ def particle_flow_particle_filter(
             particle_count_f
         )
         log_likelihood = log_likelihood + incremental_log_likelihood
+        log_likelihood_ta = log_likelihood_ta.write(t, incremental_log_likelihood)
 
         current_particles = post_particles
         current_log_weights = post_log_weights
@@ -217,6 +220,7 @@ def particle_flow_particle_filter(
         ancestor_indices=ancestors_ta.stack(),
         effective_sample_sizes=ess_ta.stack(),
         log_likelihood=log_likelihood,
+        log_likelihood_trace=log_likelihood_ta.stack(),
         flow_log_jacobians=log_jacobian_ta.stack(),
         flow_diagnostics=flow_diagnostics,
     )

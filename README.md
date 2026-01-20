@@ -249,9 +249,9 @@ Reports are located in:
 
 ## Author
 
-[Your Name]  
-[Your Email]  
-[Your University/Degree if applicable]
+Gao Zhesi  
+Tsinghua University  
+Finance PhD candidate
 
 ## License
 
